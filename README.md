@@ -6,6 +6,9 @@ I completely stole this as a learning project. The original is probably way bett
 
 UPDATES TBD
 ```
+## Run me
+py -m pip install -e .
+py -m gita -h
 
 # Gitchk: a command-line tool to manage multiple git repos
 
