@@ -1,5 +1,5 @@
 
-_gita_completions()
+_gitchk_completions()
 {
 
   local cur commands repos cmd
@@ -10,12 +10,12 @@ _gita_completions()
 
 
   # this doesn't work for two repos with the same basename
-  #gita_path=${XDG_CONFIG_HOME:-$HOME/.config}/gita/repo_path
-  #repos=`awk '{split($0, paths, ":")} END {for (i in paths) {n=split(paths[i],b, /\//); print b[n]}}' ${gita_path}`
+  #gitchk_path=${XDG_CONFIG_HOME:-$HOME/.config}/gitchk/repo_path
+  #repos=`awk '{split($0, paths, ":")} END {for (i in paths) {n=split(paths[i],b, /\//); print b[n]}}' ${gitchk_path}`
 
   if [ $COMP_CWORD -eq 1 ]; then
     # FIXME: this is somewhat slow
-    commands=`gita -h | sed '2q;d' |sed 's/[{}.,]/ /g'`
+    commands=`gitchk -h | sed '2q;d' |sed 's/[{}.,]/ /g'`
     COMPREPLY=($(compgen -W "${commands}" ${cur}))
   elif [ $COMP_CWORD -gt 1 ]; then
     case $cmd in
@@ -29,17 +29,17 @@ _gita_completions()
         COMPREPLY=($(compgen -W "ll set" ${cur}))
         ;;
       ll | context)
-        groups=`gita group ls`
+        groups=`gitchk group ls`
         COMPREPLY=($(compgen -W "${groups}" ${cur}))
         return
         ;;
       *)
-        repos=`gita ls`
+        repos=`gitchk ls`
         COMPREPLY=($(compgen -W "${repos}" ${cur}))
         ;;
     esac
   fi
 }
 
-complete -F _gita_completions gita
+complete -F _gitchk_completions gitchk
 

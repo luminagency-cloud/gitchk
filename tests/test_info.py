@@ -1,7 +1,7 @@
 import subprocess
 from unittest.mock import patch, MagicMock
 
-from gita import info
+from gitchk import info
 
 
 @patch("subprocess.run")

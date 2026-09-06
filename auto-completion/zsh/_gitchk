@@ -1,38 +1,38 @@
-#compdef gita
+#compdef gitchk
 
-__gita_get_repos() {
+__gitchk_get_repos() {
     local -a repositories
-    repositories=($(_call_program commands gita ls))
-    _describe -t repositories 'gita repositories' repositories
+    repositories=($(_call_program commands gitchk ls))
+    _describe -t repositories 'gitchk repositories' repositories
 }
 
-__gita_get_context() {
+__gitchk_get_context() {
     local -a context
     context=(
         "auto"
         "none"
     )
-    _describe -t context 'gita context' context
-    __gita_get_groups
+    _describe -t context 'gitchk context' context
+    __gitchk_get_groups
 }
 
-__gita_get_infos() {
+__gitchk_get_infos() {
     local -a all_infos infos_in_used infos_unused
-    all_infos=($(_call_program commands gita info ll | cut -d ":" -f2))
+    all_infos=($(_call_program commands gitchk info ll | cut -d ":" -f2))
     infos_in_used=($(echo ${all_infos[1]} | tr ',' ' '))
     infos_unused=($(echo ${all_infos[2]} | tr ',' ' '))
-    _describe -t infos_used 'gita infos in used' infos_in_used
-    _describe -t infos_unused 'gita infos unused' infos_unused
+    _describe -t infos_used 'gitchk infos in used' infos_in_used
+    _describe -t infos_unused 'gitchk infos unused' infos_unused
 }
 
-__gita_get_groups() {
+__gitchk_get_groups() {
     local -a groups
 
-    groups=($(_call_program commands gita group ls))
-    _describe -t groups 'gita groups' groups
+    groups=($(_call_program commands gitchk group ls))
+    _describe -t groups 'gitchk groups' groups
 }
 
-__gita_commands() {
+__gitchk_commands() {
     local -a commands
     commands=(
         'add:Add repo(s)'
@@ -51,15 +51,15 @@ __gita_commands() {
         'shell:Run any shell command'
         'clear:Removes all groups and repositories'
     )
-    _describe -t commands 'gita sub-commands' commands
+    _describe -t commands 'gitchk sub-commands' commands
 }
 
-# FUNCTION: _gita_add [[[
-_gita_add() {
+# FUNCTION: _gitchk_add [[[
+_gitchk_add() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
         '(-n --dry-run)'{-n,--dry-run}'[dry run]' \
-        '(-g --group)'{-g=,--group=}'[add repo(s) to the specified group]:Gita groups:__gita_get_groups' \
+        '(-g --group)'{-g=,--group=}'[add repo(s) to the specified group]:gitchk groups:__gitchk_get_groups' \
         '(-s --skip-modules)'{-s,--skip-modules}'[skip submodule repo(s)]' \
         '(-r --recursive)'{-r,--recursive}'[recursively add repo(s) in the given path(s)]' \
         '(-a --auto-group)'{-a,--auto-group}'[recursively add repo(s) in the given path(s) and create hierarchical groups based on folder structure]' \
@@ -69,77 +69,77 @@ _gita_add() {
 }
 #]]]
 
-# FUNCTION: _gita_rm [[[
-_gita_rm() {
+# FUNCTION: _gitchk_rm [[[
+_gitchk_rm() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -)*:gita repositories:__gita_get_repos" &&
+        "(-h --help -)*:gitchk repositories:__gitchk_get_repos" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_freeze [[[
-_gita_freeze() {
+# FUNCTION: _gitchk_freeze [[[
+_gitchk_freeze() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        '(-g --group)'{-g=,--group=}'[freeze repos in the specified group]:Gita groups:__gita_get_groups' &&
+        '(-g --group)'{-g=,--group=}'[freeze repos in the specified group]:gitchk groups:__gitchk_get_groups' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_clone [[[
-_gita_clone() {
+# FUNCTION: _gitchk_clone [[[
+_gitchk_clone() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
         '(-C --directory)'{-C=,--directory=}'[ Change to DIRECTORY before doing anything]:Directories:_directories' \
         '(-p --preserve-path)'{-p,--preserve-path}'[clone repo(s) in their original paths]' \
         '(-n --dry-run)'{-n,--dry-run}'[dry run]' \
-        '(-g --group)'{-g=,--group=}'[If set, add repo to the specified group after cloning, otherwise add to gita without group]:Gita groups:__gita_get_groups' \
-        '(-f --from-file)'{-f=,--from-file=}'[ If set, clone repos in a config file rendered from `gita freeze`]:File:_path_files' &&
+        '(-g --group)'{-g=,--group=}'[If set, add repo to the specified group after cloning, otherwise add to gitchk without group]:gitchk groups:__gitchk_get_groups' \
+        '(-f --from-file)'{-f=,--from-file=}'[ If set, clone repos in a config file rendered from `gitchk freeze`]:File:_path_files' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_rename [[[
-_gita_rename() {
+# FUNCTION: _gitchk_rename [[[
+_gitchk_rename() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -):Gita repositories:__gita_get_repos" &&
+        "(-h --help -):gitchk repositories:__gitchk_get_repos" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_flags_commands[[[
-_gita_flags_commands() {
+# FUNCTION: _gitchk_flags_commands[[[
+_gitchk_flags_commands() {
 
     local -a subcommands
     subcommands=(
         'll:Display repos with custom flags'
         'set:Set flags for repo'
     )
-    _describe -t subcommands 'gita flag sub-commands' subcommands
+    _describe -t subcommands 'gitchk flag sub-commands' subcommands
 }
 #]]]
 
-# FUNCTION: _gita_flags_ll [[[
-_gita_flags_ll() {
+# FUNCTION: _gitchk_flags_ll [[[
+_gitchk_flags_ll() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_flags_set [[[
-_gita_flags_set() {
+# FUNCTION: _gitchk_flags_set [[[
+_gitchk_flags_set() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -):Gita repositories:__gita_get_repos" &&
+        "(-h --help -):gitchk repositories:__gitchk_get_repos" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_flags[[[
-_gita_flags() {
+# FUNCTION: _gitchk_flags[[[
+_gitchk_flags() {
     local curcontext="$curcontext" state state_descr line expl
     local tmp ret=1
     _arguments -A \
@@ -150,12 +150,12 @@ _gita_flags() {
         "*::arg:->args"
     case "$state" in
     cmds)
-        _gita_flags_commands && return 0
+        _gitchk_flags_commands && return 0
         ;;
     args)
         local cmd="${line[1]}"
         curcontext="${curcontext%:*}-${cmd}:${curcontext##*:}"
-        local completion_func="_gita_flags_${cmd//-/_}"
+        local completion_func="_gitchk_flags_${cmd//-/_}"
         _call_function ret "${completion_func}" && return ret
         _message "a completion function is not defined for command or alias: ${cmd}"
         return 1
@@ -164,8 +164,8 @@ _gita_flags() {
 }
 #]]]
 
-# FUNCTION: _gita_color_commands[[[
-_gita_color_commands() {
+# FUNCTION: _gitchk_color_commands[[[
+_gitchk_color_commands() {
 
     local -a subcommands
     subcommands=(
@@ -173,36 +173,36 @@ _gita_color_commands() {
         'set:Set color for local/remote situation'
         'reset:Reset color scheme'
     )
-    _describe -t subcommands 'gita color sub-commands' subcommands
+    _describe -t subcommands 'gitchk color sub-commands' subcommands
 }
 #]]]
 
-# FUNCTION: _gita_color_ll [[[
-_gita_color_ll() {
+# FUNCTION: _gitchk_color_ll [[[
+_gitchk_color_ll() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_color_set [[[
-_gita_color_set() {
+# FUNCTION: _gitchk_color_set [[[
+_gitchk_color_set() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_color_reset [[[
-_gita_color_reset() {
+# FUNCTION: _gitchk_color_reset [[[
+_gitchk_color_reset() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_color[[[
-_gita_color() {
+# FUNCTION: _gitchk_color[[[
+_gitchk_color() {
     local curcontext="$curcontext" state state_descr line expl
     local tmp ret=1
     _arguments -A \
@@ -213,12 +213,12 @@ _gita_color() {
         "*::arg:->args"
     case "$state" in
     cmds)
-        _gita_color_commands && return 0
+        _gitchk_color_commands && return 0
         ;;
     args)
         local cmd="${line[1]}"
         curcontext="${curcontext%:*}-${cmd}:${curcontext##*:}"
-        local completion_func="_gita_color_${cmd//-/_}"
+        local completion_func="_gitchk_color_${cmd//-/_}"
         _call_function ret "${completion_func}" && return ret
         _message "a completion function is not defined for command or alias: ${cmd}"
         return 1
@@ -227,8 +227,8 @@ _gita_color() {
 }
 #]]]
 
-# FUNCTION: _gita_info_commands[[[
-_gita_info_commands() {
+# FUNCTION: _gitchk_info_commands[[[
+_gitchk_info_commands() {
 
     local -a subcommands
     subcommands=(
@@ -236,38 +236,38 @@ _gita_info_commands() {
         'add:Enable information item'
         'rm:Disable information item'
     )
-    _describe -t subcommands 'gita info sub-commands' subcommands
+    _describe -t subcommands 'gitchk info sub-commands' subcommands
 }
 #]]]
 
-# FUNCTION: _gita_info_ll [[[
-_gita_info_ll() {
+# FUNCTION: _gitchk_info_ll [[[
+_gitchk_info_ll() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_info_add [[[
-_gita_info_add() {
+# FUNCTION: _gitchk_info_add [[[
+_gitchk_info_add() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -):Gita infos:__gita_get_infos" &&
+        "(-h --help -):gitchk infos:__gitchk_get_infos" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_info_rm [[[
-_gita_info_rm() {
+# FUNCTION: _gitchk_info_rm [[[
+_gitchk_info_rm() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -):Gita infos:__gita_get_infos" &&
+        "(-h --help -):gitchk infos:__gitchk_get_infos" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_info[[[
-_gita_info() {
+# FUNCTION: _gitchk_info[[[
+_gitchk_info() {
     local curcontext="$curcontext" state state_descr line expl
     local tmp ret=1
     _arguments -A \
@@ -278,12 +278,12 @@ _gita_info() {
         "*::arg:->args"
     case "$state" in
     cmds)
-        _gita_info_commands && return 0
+        _gitchk_info_commands && return 0
         ;;
     args)
         local cmd="${line[1]}"
         curcontext="${curcontext%:*}-${cmd}:${curcontext##*:}"
-        local completion_func="_gita_info_${cmd//-/_}"
+        local completion_func="_gitchk_info_${cmd//-/_}"
         _call_function ret "${completion_func}" && return ret
         _message "a completion function is not defined for command or alias: ${cmd}"
         return 1
@@ -292,37 +292,37 @@ _gita_info() {
 }
 #]]]
 
-# FUNCTION: _gita_ll [[[
-_gita_ll() {
+# FUNCTION: _gitchk_ll [[[
+_gitchk_ll() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
         '(-C --no-colors)'{-C,--no-colors}'[Disable coloring on the branch names]' \
         '(-g)'-g'[Show repo summaries by group]' \
-        "(-h --help -):Groups name:__gita_get_groups" &&
+        "(-h --help -):Groups name:__gitchk_get_groups" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_context [[[
-_gita_context() {
+# FUNCTION: _gitchk_context [[[
+_gitchk_context() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -):Gita context:__gita_get_context" &&
+        "(-h --help -):gitchk context:__gitchk_get_context" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_ls [[[
-_gita_ls() {
+# FUNCTION: _gitchk_ls [[[
+_gitchk_ls() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -):Gita repositories:__gita_get_repos" &&
+        "(-h --help -):gitchk repositories:__gitchk_get_repos" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_group_commands[[[
-_gita_group_commands() {
+# FUNCTION: _gitchk_group_commands[[[
+_gitchk_group_commands() {
 
     local -a subcommands
     subcommands=(
@@ -333,67 +333,67 @@ _gita_group_commands() {
         'rename:Change group name'
         'rm:Remove group(s)'
     )
-    _describe -t subcommands 'gita group sub-commands' subcommands
+    _describe -t subcommands 'gitchk group sub-commands' subcommands
 }
 #]]]
 
-# FUNCTION: _gita_group_ll [[[
-_gita_group_ll() {
+# FUNCTION: _gitchk_group_ll [[[
+_gitchk_group_ll() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -):Groups name:__gita_get_groups" &&
+        "(-h --help -):Groups name:__gitchk_get_groups" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_group_ls [[[
-_gita_group_ls() {
+# FUNCTION: _gitchk_group_ls [[[
+_gitchk_group_ls() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_group_add [[[
-_gita_group_add() {
+# FUNCTION: _gitchk_group_add [[[
+_gitchk_group_add() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        '(-n --name)'{-n=,--name=}'[group-name,]:Groups name:__gita_get_groups' \
+        '(-n --name)'{-n=,--name=}'[group-name,]:Groups name:__gitchk_get_groups' \
         '(-p --path)'{-p=,--path=}'[group-path]:Group path:_directories' \
-        "(-h --help -)*:Gita repositories:__gita_get_repos" &&
+        "(-h --help -)*:gitchk repositories:__gitchk_get_repos" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_group_rmrepo [[[
-_gita_group_rmrepo() {
+# FUNCTION: _gitchk_group_rmrepo [[[
+_gitchk_group_rmrepo() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        '(-n --name)'{-n=,--name=}'[group-name,]:Groups name:__gita_get_groups' \
-        "(-h --help -)*:Gita repositories:__gita_get_repos" &&
+        '(-n --name)'{-n=,--name=}'[group-name,]:Groups name:__gitchk_get_groups' \
+        "(-h --help -)*:gitchk repositories:__gitchk_get_repos" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_group_rename [[[
-_gita_group_rename() {
+# FUNCTION: _gitchk_group_rename [[[
+_gitchk_group_rename() {
     _arguments -A \
         '(-h --help -)'{-h,--help}'[show this help message and exit]' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_group_rm [[[
-_gita_group_rm() {
+# FUNCTION: _gitchk_group_rm [[[
+_gitchk_group_rm() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        "(-h --help -)*:Groups name:__gita_get_groups" &&
+        "(-h --help -)*:Groups name:__gitchk_get_groups" &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita_group[[[
-_gita_group() {
+# FUNCTION: _gitchk_group[[[
+_gitchk_group() {
     local curcontext="$curcontext" state state_descr line expl
     local tmp ret=1
     _arguments -A \
@@ -404,12 +404,12 @@ _gita_group() {
         "*::arg:->args"
     case "$state" in
     cmds)
-        _gita_group_commands && return 0
+        _gitchk_group_commands && return 0
         ;;
     args)
         local cmd="${line[1]}"
         curcontext="${curcontext%:*}-${cmd}:${curcontext##*:}"
-        local completion_func="_gita_group_${cmd//-/_}"
+        local completion_func="_gitchk_group_${cmd//-/_}"
         _call_function ret "${completion_func}" && return ret
         _message "a completion function is not defined for command or alias: ${cmd}"
         return 1
@@ -418,8 +418,8 @@ _gita_group() {
 }
 #]]]
 
-# FUNCTION: _gita_super [[[
-_gita_super() {
+# FUNCTION: _gitchk_super [[[
+_gitchk_super() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
         '(-q --quote-mode)'{-q,--quote-mode}'[use quote mode]' &&
@@ -427,8 +427,8 @@ _gita_super() {
 }
 #]]]
 
-# FUNCTION: _gita_shell [[[
-_gita_shell() {
+# FUNCTION: _gitchk_shell [[[
+_gitchk_shell() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' \
         '(-q --quote-mode)'{-q,--quote-mode}'[use quote mode]' &&
@@ -436,16 +436,16 @@ _gita_shell() {
 }
 #]]]
 
-# FUNCTION: _gita_clear [[[
-_gita_clear() {
+# FUNCTION: _gitchk_clear [[[
+_gitchk_clear() {
     _arguments -A \
         '(-h --help)'{-h,--help}'[show this help message and exit]' &&
         ret=0
 }
 #]]]
 
-# FUNCTION: _gita [[[
-_gita() {
+# FUNCTION: _gitchk [[[
+_gitchk() {
     local curcontext="$curcontext" state state_descr line expl
     local tmp ret=1
     _arguments -A \
@@ -457,12 +457,12 @@ _gita() {
         "*::arg:->args"
     case "$state" in
     cmds)
-        __gita_commands && return 0
+        __gitchk_commands && return 0
         ;;
     args)
         local cmd="${line[1]}"
         curcontext="${curcontext%:*}-${cmd}:${curcontext##*:}"
-        local completion_func="_gita_${cmd//-/_}"
+        local completion_func="_gitchk_${cmd//-/_}"
         _call_function ret "${completion_func}" && return ret
         _message "a completion function is not defined for command or alias: ${cmd}"
         return 1
@@ -470,4 +470,4 @@ _gita() {
     esac
 } # ]]]
 
-_gita "$@"
+_gitchk "$@"

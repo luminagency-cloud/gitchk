@@ -5,8 +5,8 @@ import argparse
 import asyncio
 import shlex
 
-from gita import __main__
-from gita import utils, info
+from gitchk import __main__
+from gitchk import utils, info
 from conftest import (
     PATH_FNAME,
     PATH_FNAME_EMPTY,
@@ -17,7 +17,7 @@ from conftest import (
 )
 
 
-@patch("gita.utils.get_repos", return_value={"aa"})
+@patch("gitchk.utils.get_repos", return_value={"aa"})
 def test_group_name(_):
     got = __main__._group_name("xx")
     assert got == "xx"
@@ -32,7 +32,7 @@ class TestAdd:
             (["add", "."], ""),
         ],
     )
-    @patch("gita.common.get_config_fname")
+    @patch("gitchk.common.get_config_fname")
     def test_add(self, mock_path_fname, tmp_path, input, expected):
         def side_effect(input, _=None):
             return tmp_path / f"{input}.txt"
@@ -43,7 +43,7 @@ class TestAdd:
         utils.get_repos.cache_clear()
         got = utils.get_repos()
         assert len(got) == 1
-        assert got["gita"]["type"] == expected
+        assert got["gitchk"]["type"] == expected
 
 
 @pytest.mark.parametrize(
@@ -53,9 +53,9 @@ class TestAdd:
         (PATH_FNAME_CLASH, "repo2: ['--haha', '--pp']\n"),
     ],
 )
-@patch("gita.utils.is_git", return_value=True)
-@patch("gita.utils.get_groups", return_value={})
-@patch("gita.common.get_config_fname")
+@patch("gitchk.utils.is_git", return_value=True)
+@patch("gitchk.utils.get_groups", return_value={})
+@patch("gitchk.common.get_config_fname")
 def test_flags(mock_path_fname, _, __, path_fname, expected, capfd):
     mock_path_fname.return_value = path_fname
     utils.get_repos.cache_clear()
@@ -66,7 +66,7 @@ def test_flags(mock_path_fname, _, __, path_fname, expected, capfd):
 
 
 class TestLsLl:
-    @patch("gita.common.get_config_fname")
+    @patch("gitchk.common.get_config_fname")
     def test_ll(self, mock_path_fname, capfd, tmp_path):
         """
         functional test
@@ -89,25 +89,25 @@ class TestLsLl:
         __main__.main(["ls"])
         out, err = capfd.readouterr()
         assert err == ""
-        assert "gita\n" == out
+        assert "gitchk\n" == out
 
         __main__.main(["ll"])
         out, err = capfd.readouterr()
         assert err == ""
-        assert "gita" in out
+        assert "gitchk" in out
         assert info.Color.end.value in out
 
         # no color on branch name
         __main__.main(["ll", "-C"])
         out, err = capfd.readouterr()
         assert err == ""
-        assert "gita" in out
+        assert "gitchk" in out
         assert info.Color.end.value not in out
 
-        __main__.main(["ls", "gita"])
+        __main__.main(["ls", "gitchk"])
         out, err = capfd.readouterr()
         assert err == ""
-        assert out.strip() == utils.get_repos()["gita"]["path"]
+        assert out.strip() == utils.get_repos()["gitchk"]["path"]
 
     def test_ls(self, monkeypatch, capfd):
         monkeypatch.setattr(
@@ -139,15 +139,15 @@ class TestLsLl:
             ),
         ],
     )
-    @patch("gita.utils.is_git", return_value=True)
-    @patch("gita.info.get_head", return_value="master")
+    @patch("gitchk.utils.is_git", return_value=True)
+    @patch("gitchk.info.get_head", return_value="master")
     @patch(
-        "gita.info._get_repo_status",
+        "gitchk.info._get_repo_status",
         return_value=("dirty", "staged", "untracked", "", "diverged"),
     )
-    @patch("gita.info.get_commit_msg", return_value="msg")
-    @patch("gita.info.get_commit_time", return_value="")
-    @patch("gita.common.get_config_fname")
+    @patch("gitchk.info.get_commit_msg", return_value="msg")
+    @patch("gitchk.info.get_commit_time", return_value="")
+    @patch("gitchk.common.get_config_fname")
     def test_with_path_files(
         self, mock_path_fname, _0, _1, _2, _3, _4, path_fname, expected, capfd
     ):
@@ -172,7 +172,7 @@ class TestLsLl:
     ],
 )
 @patch("subprocess.run")
-@patch("gita.utils.get_repos")
+@patch("gitchk.utils.get_repos")
 def test_freeze(mock_repos, mock_run, input, expected, capfd):
     mock_repos.return_value = input
     __main__.main(["freeze"])
@@ -196,13 +196,13 @@ def test_clone_with_url(mock_run):
 
 
 @patch(
-    "gita.io.parse_clone_config",
+    "gitchk.io.parse_clone_config",
     return_value=(
         {"repo": {"url": "git@github.com:user/repo.git", "path": "/a/repo", "flags": []}},
         {},
     ),
 )
-@patch("gita.utils.run_async", new=async_mock())
+@patch("gitchk.utils.run_async", new=async_mock())
 @patch("subprocess.run")
 def test_clone_with_config_file(*_):
     asyncio.set_event_loop(asyncio.new_event_loop())
@@ -220,13 +220,13 @@ def test_clone_with_config_file(*_):
 
 
 @patch(
-    "gita.io.parse_clone_config",
+    "gitchk.io.parse_clone_config",
     return_value=(
         {"repo": {"url": "git@github.com:user/repo.git", "path": "/a/repo", "flags": []}},
         {},
     ),
 )
-@patch("gita.utils.run_async", new=async_mock())
+@patch("gitchk.utils.run_async", new=async_mock())
 @patch("subprocess.run")
 def test_clone_with_preserve_path(*_):
     asyncio.set_event_loop(asyncio.new_event_loop())
@@ -245,15 +245,15 @@ def test_clone_with_preserve_path(*_):
 
 @patch("os.makedirs")
 @patch("os.path.isfile", return_value=True)
-@patch("gita.common.get_config_fname", return_value="some path")
+@patch("gitchk.common.get_config_fname", return_value="some path")
 @patch(
-    "gita.utils.get_repos",
+    "gitchk.utils.get_repos",
     return_value={
         "repo1": {"path": "/a/", "type": ""},
         "repo2": {"path": "/b/", "type": ""},
     },
 )
-@patch("gita.utils.write_to_repo_file")
+@patch("gitchk.utils.write_to_repo_file")
 def test_rm(mock_write, *_):
     args = argparse.Namespace()
     args.repo = ["repo1"]
@@ -266,7 +266,7 @@ def test_not_add():
     __main__.main(["add", "/home/some/repo/"])
 
 
-@patch("gita.utils.get_repos", return_value={"repo2": {"path": "/d/efg", "flags": []}})
+@patch("gitchk.utils.get_repos", return_value={"repo2": {"path": "/d/efg", "flags": []}})
 @patch("subprocess.run")
 def test_fetch(mock_run, *_):
     asyncio.set_event_loop(asyncio.new_event_loop())
@@ -275,13 +275,13 @@ def test_fetch(mock_run, *_):
 
 
 @patch(
-    "gita.utils.get_repos",
+    "gitchk.utils.get_repos",
     return_value={
         "repo1": {"path": "/a/bc", "flags": []},
         "repo2": {"path": "/d/efg", "flags": []},
     },
 )
-@patch("gita.utils.run_async", new=async_mock())
+@patch("gitchk.utils.run_async", new=async_mock())
 @patch("subprocess.run")
 def test_async_fetch(*_):
     __main__.main(["fetch"])
@@ -300,7 +300,7 @@ def test_async_fetch(*_):
         "commit -am 'lala kaka'",
     ],
 )
-@patch("gita.utils.get_repos", return_value={"repo7": {"path": "path7", "flags": []}})
+@patch("gitchk.utils.get_repos", return_value={"repo7": {"path": "path7", "flags": []}})
 @patch("subprocess.run")
 def test_superman(mock_run, _, input):
     mock_run.reset_mock()
@@ -317,7 +317,7 @@ def test_superman(mock_run, _, input):
         "commit -am 'lala kaka'",
     ],
 )
-@patch("gita.utils.get_repos", return_value={"repo7": {"path": "path7", "flags": []}})
+@patch("gitchk.utils.get_repos", return_value={"repo7": {"path": "path7", "flags": []}})
 @patch("subprocess.run")
 def test_shell(mock_run, _, input):
     mock_run.reset_mock()
@@ -330,29 +330,29 @@ def test_shell(mock_run, _, input):
 
 
 class TestContext:
-    @patch("gita.utils.get_context", return_value=None)
+    @patch("gitchk.utils.get_context", return_value=None)
     def test_display_no_context(self, _, capfd):
         __main__.main(["context"])
         out, err = capfd.readouterr()
         assert err == ""
         assert "Context is not set\n" == out
 
-    @patch("gita.utils.get_context", return_value=Path("gname.context"))
-    @patch("gita.utils.get_groups", return_value={"gname": {"repos": ["a", "b"]}})
+    @patch("gitchk.utils.get_context", return_value=Path("gname.context"))
+    @patch("gitchk.utils.get_groups", return_value={"gname": {"repos": ["a", "b"]}})
     def test_display_context(self, _, __, capfd):
         __main__.main(["context"])
         out, err = capfd.readouterr()
         assert err == ""
         assert "gname: a b\n" == out
 
-    @patch("gita.utils.get_context")
+    @patch("gitchk.utils.get_context")
     def test_reset(self, mock_ctx):
         __main__.main(["context", "none"])
         mock_ctx.return_value.unlink.assert_called()
 
-    @patch("gita.utils.get_context", return_value=None)
-    @patch("gita.common.get_config_dir", return_value=TEST_DIR)
-    @patch("gita.utils.get_groups", return_value={"lala": ["b"], "kaka": []})
+    @patch("gitchk.utils.get_context", return_value=None)
+    @patch("gitchk.common.get_config_dir", return_value=TEST_DIR)
+    @patch("gitchk.utils.get_groups", return_value={"lala": ["b"], "kaka": []})
     def test_set_first_time(self, *_):
         ctx = TEST_DIR / "lala.context"
         assert not ctx.is_file()
@@ -360,16 +360,16 @@ class TestContext:
         assert ctx.is_file()
         ctx.unlink()
 
-    @patch("gita.common.get_config_dir", return_value=TEST_DIR)
-    @patch("gita.utils.get_groups", return_value={"lala": ["b"], "kaka": []})
-    @patch("gita.utils.get_context")
+    @patch("gitchk.common.get_config_dir", return_value=TEST_DIR)
+    @patch("gitchk.utils.get_groups", return_value={"lala": ["b"], "kaka": []})
+    @patch("gitchk.utils.get_context")
     def test_set_second_time(self, mock_ctx, *_):
         __main__.main(["context", "kaka"])
         mock_ctx.return_value.rename.assert_called()
 
 
 class TestGroupCmd:
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
     def test_ls(self, _, capfd):
         args = argparse.Namespace()
         args.to_group = None
@@ -380,8 +380,8 @@ class TestGroupCmd:
         assert err == ""
         assert "xx yy\n" == out
 
-    @patch("gita.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
     def test_ll(self, _, __, capfd):
         args = argparse.Namespace()
         args.to_group = None
@@ -396,8 +396,8 @@ class TestGroupCmd:
             == "\x1b[4mxx\x1b[0m: \n  - a\n  - b\n\x1b[4myy\x1b[0m: \n  - a\n  - c\n  - d\n"
         )
 
-    @patch("gita.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
     def test_ll_with_group(self, _, __, capfd):
         args = argparse.Namespace()
         args.to_group = None
@@ -409,9 +409,9 @@ class TestGroupCmd:
         assert err == ""
         assert "a c d\n" == out
 
-    @patch("gita.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
-    @patch("gita.utils.write_to_groups_file")
+    @patch("gitchk.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.utils.write_to_groups_file")
     def test_rename(self, mock_write, *_):
         args = argparse.Namespace()
         args.gname = "xx"
@@ -425,8 +425,8 @@ class TestGroupCmd:
         }
         mock_write.assert_called_once_with(expected, "w")
 
-    @patch("gita.info.get_color_encoding", return_value=info.default_colors)
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.info.get_color_encoding", return_value=info.default_colors)
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
     def test_rename_error(self, *_):
         utils.get_groups.cache_clear()
         with pytest.raises(SystemExit, match="1"):
@@ -439,18 +439,18 @@ class TestGroupCmd:
             ("xx yy", {}),
         ],
     )
-    @patch("gita.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
-    @patch("gita.utils.write_to_groups_file")
+    @patch("gitchk.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.utils.write_to_groups_file")
     def test_rm(self, mock_write, _, __, input, expected):
         utils.get_groups.cache_clear()
         args = ["group", "rm"] + shlex.split(input)
         __main__.main(args)
         mock_write.assert_called_once_with(expected, "w")
 
-    @patch("gita.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
-    @patch("gita.utils.write_to_groups_file")
+    @patch("gitchk.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.utils.write_to_groups_file")
     def test_add(self, mock_write, *_):
         args = argparse.Namespace()
         args.to_group = ["a", "c"]
@@ -462,9 +462,9 @@ class TestGroupCmd:
             {"zz": {"repos": ["a", "c"], "path": ""}}, "a+"
         )
 
-    @patch("gita.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
-    @patch("gita.utils.write_to_groups_file")
+    @patch("gitchk.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.utils.write_to_groups_file")
     def test_add_to_existing(self, mock_write, *_):
         args = argparse.Namespace()
         args.to_group = ["a", "c"]
@@ -480,9 +480,9 @@ class TestGroupCmd:
             "w",
         )
 
-    @patch("gita.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
-    @patch("gita.common.get_config_fname", return_value=GROUP_FNAME)
-    @patch("gita.utils.write_to_groups_file")
+    @patch("gitchk.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
+    @patch("gitchk.common.get_config_fname", return_value=GROUP_FNAME)
+    @patch("gitchk.utils.write_to_groups_file")
     def test_rm_repo(self, mock_write, *_):
         args = argparse.Namespace()
         args.to_rm = ["a", "c"]
@@ -498,7 +498,7 @@ class TestGroupCmd:
             "w",
         )
 
-    @patch("gita.common.get_config_fname")
+    @patch("gitchk.common.get_config_fname")
     def test_integration(self, mock_path_fname, tmp_path, capfd):
         def side_effect(input, _=None):
             return tmp_path / f"{input}.csv"
@@ -507,17 +507,17 @@ class TestGroupCmd:
 
         __main__.main("add .".split())
         utils.get_repos.cache_clear()
-        __main__.main("group add gita -n test".split())
+        __main__.main("group add gitchk -n test".split())
         utils.get_groups.cache_clear()
         __main__.main("ll test".split())
         out, err = capfd.readouterr()
         assert err == ""
-        assert "gita" in out
+        assert "gitchk" in out
 
 
-@patch("gita.utils.is_git", return_value=True)
-@patch("gita.common.get_config_fname", return_value=PATH_FNAME)
-@patch("gita.utils.rename_repo")
+@patch("gitchk.utils.is_git", return_value=True)
+@patch("gitchk.common.get_config_fname", return_value=PATH_FNAME)
+@patch("gitchk.utils.rename_repo")
 def test_rename(mock_rename, _, __):
     utils.get_repos.cache_clear()
     args = ["rename", "repo1", "abc"]
@@ -534,7 +534,7 @@ def test_rename(mock_rename, _, __):
 
 
 class TestInfo:
-    @patch("gita.common.get_config_fname", return_value="")
+    @patch("gitchk.common.get_config_fname", return_value="")
     def test_ll(self, _, capfd):
         args = argparse.Namespace()
         args.info_cmd = None
@@ -545,7 +545,7 @@ class TestInfo:
         )
         assert err == ""
 
-    @patch("gita.common.get_config_fname")
+    @patch("gitchk.common.get_config_fname")
     def test_add(self, mock_get_fname, tmpdir):
         args = argparse.Namespace()
         args.info_cmd = "add"
@@ -557,7 +557,7 @@ class TestInfo:
             items = info.get_info_items()
         assert items == ["branch", "commit_msg", "commit_time", "path"]
 
-    @patch("gita.common.get_config_fname")
+    @patch("gitchk.common.get_config_fname")
     def test_rm(self, mock_get_fname, tmpdir):
         args = argparse.Namespace()
         args.info_cmd = "rm"
@@ -570,7 +570,7 @@ class TestInfo:
         assert items == ["branch", "commit_time"]
 
 
-@patch("gita.common.get_config_fname")
+@patch("gitchk.common.get_config_fname")
 def test_set_color(mock_get_fname, tmpdir):
     args = argparse.Namespace()
     args.color_cmd = "set"
@@ -599,9 +599,9 @@ def test_set_color(mock_get_fname, tmpdir):
         ({"repo1": {"path": "/a/"}, "repo2": {"path": "/b/"}}, ""),
     ],
 )
-@patch("gita.utils.write_to_groups_file")
-@patch("gita.utils.write_to_repo_file")
-@patch("gita.utils.get_repos")
+@patch("gitchk.utils.write_to_groups_file")
+@patch("gitchk.utils.write_to_repo_file")
+@patch("gitchk.utils.get_repos")
 def test_clear(
     mock_repos,
     mock_write_to_repo_file,

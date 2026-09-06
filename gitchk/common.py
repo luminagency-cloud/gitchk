@@ -3,11 +3,11 @@ import os
 
 def get_config_dir() -> str:
     root = (
-        os.environ.get("GITA_PROJECT_HOME")
+        os.environ.get("gitchk_PROJECT_HOME")
         or os.environ.get("XDG_CONFIG_HOME")
         or os.path.join(os.path.expanduser("~"), ".config")
     )
-    return os.path.join(root, "gita")
+    return os.path.join(root, "gitchk")
 
 
 def get_config_fname(fname: str) -> str:

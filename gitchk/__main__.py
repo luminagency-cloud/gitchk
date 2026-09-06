@@ -1,17 +1,16 @@
 """
-Gita manages multiple git repos. It has two functionalities
+gitchk manages multiple git repos. It has two functionalities
 
    1. display the status of multiple repos side by side
    2. delegate git commands/aliases from any working directory
 
 Examples:
-    gita ls
-    gita fetch
-    gita stat myrepo2
-    gita super myrepo1 commit -am 'add some cool feature'
+    gitchk ls
+    gitchk fetch
+    gitchk stat myrepo2
+    gitchk super myrepo1 commit -am 'add some cool feature'
 
 For bash auto completion, download and source
-https://github.com/nosarthur/gita/blob/master/.gita-completion.bash
 """
 
 import argparse
@@ -187,10 +186,10 @@ def f_clone(args: argparse.Namespace):
     }
     if not args.from_file:
         subprocess.run(["git", "clone", args.clonee], cwd=path)
-        # add the cloned repo to gita; group is also supported
+        # add the cloned repo to gitchk; group is also supported
         cloned_path = os.path.join(path, args.clonee.split("/")[-1].split(".")[0])
         if cloned_path in current_repos_path:
-            print(f"{args.clonee} already in gita.")
+            print(f"{args.clonee} already in gitchk.")
             return
         args.paths = [cloned_path]
         args.recursive = args.auto_group = args.bare = args.skip_submodule = False
@@ -227,7 +226,7 @@ def f_clone(args: argparse.Namespace):
 
     utils.exec_async_tasks(checkout_tasks)
 
-    # add repo to gita repos, not adding already existing paths
+    # add repo to gitchk repos, not adding already existing paths
     new_repos = {
         name: prop
         for name, prop in repos_to_clone.items()
@@ -235,7 +234,7 @@ def f_clone(args: argparse.Namespace):
     }
     utils.write_to_repo_file(new_repos, "a+")
 
-    # add repo to gita groups, ig group already exists, add new repo to it if there is.
+    # add repo to gitchk groups, ig group already exists, add new repo to it if there is.
     for gname, prop in groups_to_clone.items():
         args.group_cmd = "add"
         args.gname = gname
@@ -403,7 +402,7 @@ def f_context(args: argparse.Namespace):
 
 def f_rm(args: argparse.Namespace):
     """
-    Unregister repo(s) from gita
+    Unregister repo(s) from gitchk
     """
     path_file = common.get_config_fname("repos.csv")
     if os.path.isfile(path_file):
@@ -438,7 +437,7 @@ def f_git_cmd(args: argparse.Namespace):
         per_repo_cmds.append(cmds)
 
     # This async blacklist mechanism is broken if the git command name does
-    # not match with the gita command name.
+    # not match with the gitchk command name.
     if len(repos) == 1 or args.cmd[1] in args.async_blacklist:
         for prop, cmds in zip(repos.values(), per_repo_cmds):
             path = prop["path"]
@@ -458,7 +457,7 @@ def f_git_cmd(args: argparse.Namespace):
             if path:
                 print(path)
                 # FIXME: This is broken, flags are missing. But probably few
-                #        people will use `gita flags`
+                #        people will use `gitchk flags`
                 subprocess.run(args.cmd, cwd=path)
 
 
@@ -508,7 +507,7 @@ def f_clear(_):
 
 def main(argv=None):
     p = argparse.ArgumentParser(
-        prog="gita", formatter_class=argparse.RawTextHelpFormatter, description=__doc__
+        prog="gitchk", formatter_class=argparse.RawTextHelpFormatter, description=__doc__
     )
     subparsers = p.add_subparsers(
         title="sub-commands", help="additional help with sub-command -h"
@@ -598,14 +597,14 @@ def main(argv=None):
     xgroup.add_argument(
         "-g",
         "--group",
-        help="If set, add repo to the specified group after cloning, otherwise add to gita without group. "
+        help="If set, add repo to the specified group after cloning, otherwise add to gitchk without group. "
         "If group does not exists, create it.",
     )
     xgroup.add_argument(
         "-f",
         "--from-file",
         action="store_true",
-        help="If set, clone repos in a config file rendered from `gita freeze`",
+        help="If set, clone repos in a config file rendered from `gitchk freeze`",
     )
     p_clone.set_defaults(func=f_clone)
 
@@ -818,15 +817,15 @@ def main(argv=None):
         help="run any git command/alias",
         description="Superman mode: delegate any git command/alias in specified repo(s), group(s), or "
         "all repo(s).\n"
-        'Examples:\n \t gita super myrepo1 commit -am "fix a bug"\n'
-        "\t gita super repo1 repo2 repo3 checkout new-feature",
+        'Examples:\n \t gitchk super myrepo1 commit -am "fix a bug"\n'
+        "\t gitchk super repo1 repo2 repo3 checkout new-feature",
     )
     p_super.add_argument(
         "man",
         nargs=argparse.REMAINDER,
         help="execute arbitrary git command/alias for specified repo(s), group(s), or all repos.\n"
-        "Example: gita super repo1 diff --name-only --staged;\n"
-        "gita super checkout master ",
+        "Example: gitchk super repo1 diff --name-only --staged;\n"
+        "gitchk super checkout master ",
     )
     p_super.add_argument(
         "-q", "--quote-mode", action="store_true", help="use quote mode"
@@ -839,15 +838,15 @@ def main(argv=None):
         help="run any shell command",
         description="shell mode: delegate any shell command in specified repo(s), group(s), or "
         "all repo(s).\n"
-        "Examples:\n \t gita shell pwd; \n"
-        "\t gita shell repo1 repo2 repo3 touch xx",
+        "Examples:\n \t gitchk shell pwd; \n"
+        "\t gitchk shell repo1 repo2 repo3 touch xx",
     )
     p_shell.add_argument(
         "man",
         nargs=argparse.REMAINDER,
         help="execute arbitrary shell command for specified repo(s), group(s), or all repos.\n"
-        "Example: gita shell myrepo1 ls\n"
-        "Another: gita shell git checkout master ",
+        "Example: gitchk shell myrepo1 ls\n"
+        "Another: gitchk shell git checkout master ",
     )
     p_shell.add_argument(
         "-q", "--quote-mode", action="store_true", help="use quote mode"

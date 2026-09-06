@@ -114,7 +114,7 @@ def get_color_encoding() -> Dict[str, str]:
 
 def get_info_funcs(no_colors=False) -> List[Callable[[str], str]]:
     """
-    Return the functions to generate `gita ll` information. All these functions
+    Return the functions to generate `gitchk ll` information. All these functions
     take the repo path as input and return the corresponding information as str.
     See `get_path`, `get_repo_status`, `get_common_commit` for examples.
     """
@@ -132,7 +132,7 @@ def get_info_funcs(no_colors=False) -> List[Callable[[str], str]]:
 
 def get_info_items() -> List[str]:
     """
-    Return the information items to be displayed in the `gita ll` command.
+    Return the information items to be displayed in the `gitchk ll` command.
     """
     # custom settings
     csv_config = Path(common.get_config_fname("info.csv"))

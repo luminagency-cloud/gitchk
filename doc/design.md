@@ -2,38 +2,38 @@
 
 This document explains the inner workings of this 200 LOC (excluding tests) project.
 
-The main idea of `gita` is to run git command/alias in subprocess or
+The main idea of `gitchk` is to run git command/alias in subprocess or
 asynchronous subprocess, which enables the following features
 
 - execute git commands/aliases from any working directory
 - execute the same command for multiple repos in batch mode
 
-In addition, the `gita ll` command runs various `git` commands to collect
+In addition, the `gitchk ll` command runs various `git` commands to collect
 information for each repo, and displays the result of all repos side by side.
 
 ## user interface
 
-There are three types of `gita` sub-commands
+There are three types of `gitchk` sub-commands
 
-- **bookkeeping**: add/remove repos from `gita`, display repo information
+- **bookkeeping**: add/remove repos from `gitchk`, display repo information
 - **delegating**: delegate pre-configured `git` commands or aliases
 - **`super`**: delegate arbitrary `git` commands or aliases
 
-And there are only two `gita` options, i.e., the `-h` for help and `-v` for version.
+And there are only two `gitchk` options, i.e., the `-h` for help and `-v` for version.
 
 The bookkeeping and delegating sub-commands all share the formats
 
 ```shell
-gita <sub-command> <repo-name(s)>
-gita <sub-command> [repo-name(s)]
+gitchk <sub-command> <repo-name(s)>
+gitchk <sub-command> [repo-name(s)]
 ```
 
 The exceptions are `add`, `ll`, and `super`
 
 ```shell
-gita ll
-gita add <repo-path(s)>
-gita super [repo-name(s)] <any-git-command-with-options>
+gitchk ll
+gitchk add <repo-path(s)>
+gitchk super [repo-name(s)] <any-git-command-with-options>
 ```
 
 The argument choices are determined by two utility functions
@@ -43,8 +43,8 @@ The argument choices are determined by two utility functions
 
 ## sub-command actions
 
-The actions of the `gita` sub-commands are defined
-in [`__main__.py`](https://github.com/nosarthur/gita/gita/__main__.py).
+The actions of the `gitchk` sub-commands are defined
+in [`__main__.py`](https://github.com/nosarthur/gitchk/gitchk/__main__.py).
 
 All delegating sub-commands call
 
@@ -66,12 +66,12 @@ Not surprisingly, the `f_super` function calls `f_git_cmd` in the end.
 
 ## repo status information
 
-Utility functions to extract repo status information are defined in [utils.py](https://github.com/nosarthur/gita/gita/utils.py).
+Utility functions to extract repo status information are defined in [utils.py](https://github.com/nosarthur/gitchk/gitchk/utils.py).
 For example,
 
 | information                                                                    | API                                         | note                                    |
 | ------------------------------------------------------------------------------ | ------------------------------------------- | --------------------------------------- |
-| repo name and path                                                             | `get_repos() -> Dict[str, str]`             | parse `$XDG_CONFIG_HOME/gita/repo_path` |
+| repo name and path                                                             | `get_repos() -> Dict[str, str]`             | parse `$XDG_CONFIG_HOME/gitchk/repo_path` |
 | branch name                                                                    | `get_head(path: str) -> str`                | parse `.git/HEAD`                       |
 | commit message                                                                 | `get_commit_msg() -> str`                   | run `subprocess`                        |
 | loca/remote relation                                                           | `_get_repo_status(path: str) -> Tuple[str]` | run `subprocess`                        |

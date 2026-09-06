@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 from unittest.mock import patch, mock_open
 
-from gita import utils, info
+from gitchk import utils, info
 from conftest import (
     PATH_FNAME,
     PATH_FNAME_EMPTY,
@@ -60,8 +60,8 @@ def test_get_relative_path(kid, parent, expected):
         (["repo1"], ({"repo1": {"flags": [], "path": "/a/bcd/repo1", "type": ""}}, [])),
     ],
 )
-@patch("gita.utils.is_git", return_value=True)
-@patch("gita.common.get_config_fname", return_value=PATH_FNAME)
+@patch("gitchk.utils.is_git", return_value=True)
+@patch("gitchk.common.get_config_fname", return_value=PATH_FNAME)
 def test_parse_repos_and_rest(mock_path_fname, _, input, expected):
     got = utils.parse_repos_and_rest(input)
     assert got == expected
@@ -166,15 +166,15 @@ def test_describe(test_input, diff_return, expected, monkeypatch):
         ),
     ],
 )
-@patch("gita.utils.is_git", return_value=True)
-@patch("gita.common.get_config_fname")
+@patch("gitchk.utils.is_git", return_value=True)
+@patch("gitchk.common.get_config_fname")
 def test_get_repos(mock_path_fname, _, path_fname, expected):
     mock_path_fname.return_value = path_fname
     utils.get_repos.cache_clear()
     assert utils.get_repos() == expected
 
 
-@patch("gita.common.get_config_dir")
+@patch("gitchk.common.get_config_dir")
 def test_get_context(mock_config_dir):
     mock_config_dir.return_value = TEST_DIR
     utils.get_context.cache_clear()
@@ -197,8 +197,8 @@ def test_get_context(mock_config_dir):
         ),
     ],
 )
-@patch("gita.common.get_config_fname")
-@patch("gita.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
+@patch("gitchk.common.get_config_fname")
+@patch("gitchk.utils.get_repos", return_value={"a": "", "b": "", "c": "", "d": ""})
 def test_get_groups(_, mock_group_fname, group_fname, expected):
     mock_group_fname.return_value = group_fname
     utils.get_groups.cache_clear()
@@ -231,12 +231,12 @@ def test_custom_push_cmd(*_):
     ],
 )
 @patch("os.makedirs")
-@patch("gita.utils.is_git", return_value=True)
+@patch("gitchk.utils.is_git", return_value=True)
 def test_add_repos(_0, _1, path_input, expected, monkeypatch):
     monkeypatch.setenv("XDG_CONFIG_HOME", "/config")
     with patch("builtins.open", mock_open()) as mock_file:
         utils.add_repos({"repo": {"path": "/nos/repo"}}, path_input)
-    mock_file.assert_called_with("/config/gita/repos.csv", "a+", newline="")
+    mock_file.assert_called_with("/config/gitchk/repos.csv", "a+", newline="")
     handle = mock_file()
     if type(expected) == str:
         handle.write.assert_called_once_with(expected)
@@ -248,8 +248,8 @@ def test_add_repos(_0, _1, path_input, expected, monkeypatch):
         assert not kwargs
 
 
-@patch("gita.utils.write_to_groups_file")
-@patch("gita.utils.write_to_repo_file")
+@patch("gitchk.utils.write_to_groups_file")
+@patch("gitchk.utils.write_to_repo_file")
 def test_rename_repo(mock_write, _):
     repos = {"r1": {"path": "/a/b", "type": None}, "r2": {"path": "/c/c", "type": None}}
     utils.rename_repo(repos, "r2", "xxx")

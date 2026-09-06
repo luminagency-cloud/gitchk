@@ -7,7 +7,7 @@ def get_version() -> str:
     except ImportError:
         print("cannot determine version", sys.version_info)
     else:
-        return version("gita")
+        return version("gitchk")
 
 
 __version__ = get_version()
