@@ -48,14 +48,18 @@ using green as baseline.
 You can change the color scheme using the `gitchk color` command.
 See the [customization section](#custom).
 
-The additional status symbols denote
+The additional status words denote
 
-| symbol | meaning                 |
-| ------ | ----------------------- |
-| `+`    | staged changes          |
-| `*`    | unstaged changes        |
-| `?`    | untracked files/folders |
-| `$`    | stashed contents        |
+| word        | meaning                     |
+| ----------- | ---------------------------- |
+| `staged`    | staged changes                |
+| `dirty`     | unstaged changes              |
+| `untracked` | untracked files/folders       |
+| `stashed`   | stashed contents              |
+| `ahead`     | local branch is ahead of remote |
+| `behind`    | local branch is behind remote |
+| `diverged`  | local and remote have diverged |
+| `noremote`  | no remote is configured       |
 
 The bookkeeping sub-commands are
 
@@ -376,22 +380,22 @@ configuration is saved in `$XDG_CONFIG_HOME/gitchk/info.csv`.
 For example, the default setting corresponds to
 
 ```csv
-branch,commit_msg,commit_time
+branch,commit_time,commit_msg
 ```
 
-Here `branch` includes both branch name and status.
-The status symbols are similar to the ones used in [spaceship-prompt](https://spaceship-prompt.sh/sections/git/#Git-status-git_status).
+Here `branch` includes both branch name and status, and `commit_time` is the age of
+the last commit, formatted as `-DDDhrs` while under a day old or `-DDDday` once a day
+or older (zero-padded to 3 digits, capped at 999).
 
-To customize these symbols, add a file in `$XDG_CONFIG_HOME/gitchk/symbols.csv`.
+To customize the status words, add a file in `$XDG_CONFIG_HOME/gitchk/symbols.csv`.
 The default settings corresponds to
 
 ```csv
 dirty,staged,untracked,stashed,local_ahead,remote_ahead,diverged,in_sync,no_remote
-*,+,?,$,↑,↓,⇕,,∅
+dirty,staged,untracked,stashed,ahead,behind,diverged,,noremote
 ```
 
-Only the symbols to be overridden need to be defined.
-You can search unicode symbols [here](https://www.compart.com/en/unicode/).
+Only the values to be overridden need to be defined.
 
 ### customize git command flags
 
@@ -416,9 +420,7 @@ This feature was originally added to deal with
 
 ## Requirements
 
-gitchk requires Python 3.6 or higher, due to the use of
-[f-string](https://www.python.org/dev/peps/pep-0498/)
-and [asyncio module](https://docs.python.org/3.6/library/asyncio.html).
+gitchk requires Python 3.14 or higher.
 
 Under the hood, gitchk uses `subprocess` to run git commands/aliases.
 Thus the installed git version may matter.

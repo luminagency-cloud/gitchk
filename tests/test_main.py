@@ -130,12 +130,12 @@ class TestLsLl:
         [
             (
                 PATH_FNAME,
-                "repo1 \x1b[31mmaster     [*+?⇕] \x1b[0m msg \nrepo2 \x1b[31mmaster     [*+?⇕] \x1b[0m msg \nxxx   \x1b[31mmaster     [*+?⇕] \x1b[0m msg \n",
+                "repo1 \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\nrepo2 \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\nxxx   \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\n",
             ),
             (PATH_FNAME_EMPTY, ""),
             (
                 PATH_FNAME_CLASH,
-                "repo1 \x1b[31mmaster     [*+?⇕] \x1b[0m msg \nrepo2 \x1b[31mmaster     [*+?⇕] \x1b[0m msg \n",
+                "repo1 \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\nrepo2 \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\n",
             ),
         ],
     )
@@ -541,7 +541,7 @@ class TestInfo:
         __main__.f_info(args)
         out, err = capfd.readouterr()
         assert (
-            "In use: branch,commit_msg,commit_time\nUnused: branch_name,path\n" == out
+            "In use: branch,commit_time,commit_msg\nUnused: branch_name,path\n" == out
         )
         assert err == ""
 
@@ -555,7 +555,7 @@ class TestInfo:
             mock_get_fname.return_value = csv_config
             __main__.f_info(args)
             items = info.get_info_items()
-        assert items == ["branch", "commit_msg", "commit_time", "path"]
+        assert items == ["branch", "commit_time", "commit_msg", "path"]
 
     @patch("gitchk.common.get_config_fname")
     def test_rm(self, mock_get_fname, tmpdir):

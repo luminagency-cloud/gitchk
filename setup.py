@@ -18,7 +18,7 @@ setup(
     author="Dong Zhou",
     author_email="zhou.dong@gmail.com",
     entry_points={"console_scripts": ["gitchk = gitchk.__main__:main"]},
-    python_requires=">=3.8",
+    python_requires=">=3.14",
     install_requires=["argcomplete", "packaging"],
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -31,6 +31,7 @@ setup(
         "Topic :: Terminals",
         "Topic :: Utilities",
         "Programming Language :: Python :: 3.14",
+        "Programming Language :: Python :: 3 :: Only",
     ],
     include_package_data=True,
 )

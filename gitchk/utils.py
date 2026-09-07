@@ -3,21 +3,20 @@ import csv
 import json
 import multiprocessing
 import os
-import platform
 import subprocess
 import sys
 from collections import Counter, defaultdict
+from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
-from typing import Coroutine, Dict, List, Tuple, Union
 
 from . import common, info
 
 MAX_INT = sys.maxsize
 
 
-def get_relative_path(kid: os.PathLike, parent: str) -> Union[List[str], None]:
+def get_relative_path(kid: os.PathLike, parent: str) -> list[str] | None:
     """
     Return the relative path depth if relative, otherwise None.
 
@@ -39,7 +38,7 @@ def get_relative_path(kid: os.PathLike, parent: str) -> Union[List[str], None]:
 
 
 @lru_cache()
-def get_repos(skip_validation: bool = False) -> Dict[str, Dict[str, str]]:
+def get_repos(skip_validation: bool = False) -> dict[str, dict[str, str]]:
     """
     Return a `dict` of repo name to repo absolute path and repo type
 
@@ -64,7 +63,7 @@ def get_repos(skip_validation: bool = False) -> Dict[str, Dict[str, str]]:
 
 
 @lru_cache()
-def get_context() -> Union[Path, None]:
+def get_context() -> Path | None:
     """
     Return context file path, or None if not set. Note that if in auto context
     mode, the return value is not auto.context but the resolved context,
@@ -99,7 +98,7 @@ def get_context() -> Union[Path, None]:
 
 
 @lru_cache()
-def get_groups() -> Dict[str, Dict[str, Union[str, List]]]:
+def get_groups() -> dict[str, dict[str, str | list]]:
     """
     Return a `dict` of group name to group properties such as repo names and
     group path.
@@ -124,7 +123,7 @@ def get_groups() -> Dict[str, Dict[str, Union[str, List]]]:
     return groups
 
 
-def delete_repo_from_groups(repo: str, groups: Dict[str, Dict]) -> bool:
+def delete_repo_from_groups(repo: str, groups: dict[str, dict]) -> bool:
     """
     Delete repo from groups
     """
@@ -139,7 +138,7 @@ def delete_repo_from_groups(repo: str, groups: Dict[str, Dict]) -> bool:
     return deleted
 
 
-def replace_context(old: Union[Path, None], new: str):
+def replace_context(old: Path | None, new: str):
     """ """
     auto = Path(common.get_config_dir()) / "auto.context"
     if auto.exists():
@@ -148,13 +147,12 @@ def replace_context(old: Union[Path, None], new: str):
     if new == "none":  # delete
         old and old.unlink()
     elif old:
-        # ctx.rename(ctx.with_stem(new_name))  # only works in py3.9
-        old.rename(old.with_name(f"{new}.context"))
+        old.rename(old.with_stem(new))
     else:
         Path(auto.with_name(f"{new}.context")).write_text("")
 
 
-def get_choices() -> List[Union[str, None]]:
+def get_choices() -> list[str | None]:
     """
     Return all repo names, group names, and an additional empty list. The empty
     list is added as a workaround of
@@ -209,7 +207,7 @@ def is_git(path: str, include_bare=False, exclude_submodule=False) -> bool:
     return False
 
 
-def rename_repo(repos: Dict[str, Dict[str, str]], repo: str, new_name: str):
+def rename_repo(repos: dict[str, dict[str, str]], repo: str, new_name: str):
     """
     Write new repo name to file
     """
@@ -231,7 +229,7 @@ def rename_repo(repos: Dict[str, Dict[str, str]], repo: str, new_name: str):
     write_to_groups_file(groups, "w")
 
 
-def write_to_repo_file(repos: Dict[str, Dict[str, str]], mode: str):
+def write_to_repo_file(repos: dict[str, dict[str, str]], mode: str):
     """
     @param repos: each repo is {name: {properties}}
     """
@@ -248,7 +246,7 @@ def write_to_repo_file(repos: Dict[str, Dict[str, str]], mode: str):
 
 
 # TODO: combine with the repo writer
-def write_to_groups_file(groups: Dict[str, Dict], mode: str):
+def write_to_groups_file(groups: dict[str, dict], mode: str):
     """ """
     fname = common.get_config_fname("groups.csv")
     os.makedirs(os.path.dirname(fname), exist_ok=True)
@@ -271,7 +269,7 @@ def write_to_groups_file(groups: Dict[str, Dict], mode: str):
 
 
 def _make_name(
-    path: str, repos: Dict[str, Dict[str, str]], name_counts: Counter
+    path: str, repos: dict[str, dict[str, str]], name_counts: Counter
 ) -> str:
     """
     Given a new repo `path`, create a repo name. By default, basename is used.
@@ -288,12 +286,12 @@ def _make_name(
 
 
 def add_repos(
-    repos: Dict[str, Dict[str, str]],
-    new_paths: List[str],
+    repos: dict[str, dict[str, str]],
+    new_paths: list[str],
     include_bare=False,
     exclude_submodule=False,
     dry_run=False,
-) -> Dict[str, Dict[str, str]]:
+) -> dict[str, dict[str, str]]:
     """
     Write new repo paths to file; return the added repos.
 
@@ -323,7 +321,7 @@ def add_repos(
     return new_repos
 
 
-def _generate_dir_hash(repo_path: str, paths: List[str]) -> Tuple[Tuple[str, ...], str]:
+def _generate_dir_hash(repo_path: str, paths: list[str]) -> tuple[tuple[str, ...], str]:
     """
     Return relative parent strings, and the parent head string
 
@@ -340,7 +338,7 @@ def _generate_dir_hash(repo_path: str, paths: List[str]) -> Tuple[Tuple[str, ...
     return (tail, *rel), head
 
 
-def auto_group(repos: Dict[str, Dict[str, str]], paths: List[str]) -> Dict[str, Dict]:
+def auto_group(repos: dict[str, dict[str, str]], paths: list[str]) -> dict[str, dict]:
     """
 
     @params repos: repos to be grouped
@@ -365,12 +363,11 @@ def auto_group(repos: Dict[str, Dict[str, str]], paths: List[str]) -> Dict[str, 
     return new_groups
 
 
-async def run_async(repo_name: str, path: str, cmds: List[str]) -> Union[None, str]:
+async def run_async(repo_name: str, path: str, cmds: list[str]) -> str | None:
     """
     Run `cmds` asynchronously in `path` directory. Return the `path` if
     execution fails.
     """
-    # TODO: deprecated since 3.8, will be removed in 3.10
     process = await asyncio.create_subprocess_exec(
         *cmds,
         stdin=asyncio.subprocess.DEVNULL,
@@ -382,7 +379,7 @@ async def run_async(repo_name: str, path: str, cmds: List[str]) -> Union[None, s
     stdout, stderr = await process.communicate()
     for pipe in (stdout, stderr):
         if pipe:
-            print(format_output(pipe.decode(), repo_name))
+            print(format_output(pipe.decode().replace("\r\n", "\n"), repo_name))
     # The existence of stderr is not good indicator since git sometimes write
     # to stderr even if the execution is successful, e.g. git fetch
     if process.returncode != 0:
@@ -401,17 +398,14 @@ async def _gather_tasks(tasks_list):
     return await asyncio.gather(*tasks_list)
 
 
-def exec_async_tasks(tasks: List[Coroutine]) -> List[Union[None, str]]:
+def exec_async_tasks(tasks: list[Coroutine]) -> list[str | None]:
     """
     Execute tasks asynchronously
     """
-    if platform.system() == "Windows":
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-
     return asyncio.run(_gather_tasks(tasks))
 
 
-def describe(repos: Dict[str, Dict[str, str]], no_colors: bool = False) -> str:
+def describe(repos: dict[str, dict[str, str]], no_colors: bool = False) -> str:
     """
     Return the status of all repos
     """
@@ -429,7 +423,7 @@ def describe(repos: Dict[str, Dict[str, str]], no_colors: bool = False) -> str:
                 yield line
 
 
-def get_cmds_from_files() -> Dict[str, Dict[str, str]]:
+def get_cmds_from_files() -> dict[str, dict[str, str]]:
     """
     Parse delegated git commands from default config file
     and custom config file.
@@ -460,9 +454,9 @@ def get_cmds_from_files() -> Dict[str, Dict[str, str]]:
 
 
 def parse_repos_and_rest(
-    input: List[str],
+    input: list[str],
     quote_mode=False,
-) -> Tuple[Dict[str, Dict[str, str]], List[str]]:
+) -> tuple[dict[str, dict[str, str]], list[str]]:
     """
     Parse gitchk input arguments
 

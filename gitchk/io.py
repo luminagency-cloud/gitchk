@@ -1,9 +1,8 @@
 import os
 import csv
-from typing import Tuple
 
 
-def parse_clone_config(fname: str) -> Tuple:
+def parse_clone_config(fname: str) -> tuple:
     """
     Return the repo information (url, name, path, type) and group information
     (, name, path, repos) saved in `fname`.

@@ -1,6 +1,7 @@
 import pytest
 import asyncio
 import subprocess
+import sys
 from pathlib import Path
 from unittest.mock import patch, mock_open
 
@@ -115,17 +116,17 @@ def test_auto_group(repos, paths, expected):
         (
             [{"abc": {"path": "/root/repo/", "type": "", "flags": []}}, False],
             True,
-            "abc \x1b[31mrepo       [*+?⇕] \x1b[0m msg xx",
+            "abc \x1b[31mrepo       [dirty|staged|untracked|diverged]\x1b[0m xx msg",
         ),
         (
             [{"abc": {"path": "/root/repo/", "type": "", "flags": []}}, True],
             True,
-            "abc repo       [*+?⇕]  msg xx",
+            "abc repo       [dirty|staged|untracked|diverged] xx msg",
         ),
         (
             [{"repo": {"path": "/root/repo2/", "type": "", "flags": []}}, False],
             False,
-            "repo \x1b[32mrepo       [?]    \x1b[0m msg xx",
+            "repo \x1b[32mrepo       [untracked]\x1b[0m xx msg",
         ),
     ],
 )
@@ -261,7 +262,11 @@ def test_async_output(capfd):
         utils.run_async(
             "myrepo",
             ".",
-            ["python3", "-c", f"print({i});import time; time.sleep({i});print({i})"],
+            [
+                sys.executable,
+                "-c",
+                f"print({i});import time; time.sleep({i});print({i})",
+            ],
         )
         for i in range(4)
     ]

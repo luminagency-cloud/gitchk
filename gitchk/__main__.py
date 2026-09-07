@@ -110,7 +110,7 @@ def f_flags(args: argparse.Namespace):
             if prop["flags"]:
                 print(f"{r}: {prop['flags']}")
     elif cmd == "set":
-        # when in memory, flags are List[str], when on disk, they are space
+        # when in memory, flags are list[str], when on disk, they are space
         # delimited str
         repos[args.repo]["flags"] = args.flags
         utils.write_to_repo_file(repos, "w")
@@ -158,7 +158,7 @@ def f_info(args: argparse.Namespace):
         print(f"Settings are in {csv_config}")
         defaults = {
             "branch": 19,
-            "symbols": 5,
+            "symbols": 0,  # 0 means no limit
             "branch_name": 27,
             "commit_msg": 0,
             "commit_time": 0,  # 0 means no limit
@@ -683,11 +683,15 @@ def main(argv=None):
         "The settings are in layout.csv",
     )
 
-    ll_doc = f"""  status symbols:
-    +: staged changes
-    *: unstaged changes
-    ?: untracked files/folders
-    $: stashed changes
+    ll_doc = f"""  status words:
+    staged: staged changes
+    dirty: unstaged changes
+    untracked: untracked files/folders
+    stashed: stashed changes
+    ahead: local branch is ahead of remote
+    behind: local branch is behind remote
+    diverged: local and remote have diverged
+    noremote: no remote is configured
 
   branch colors:
     {info.Color.white}white{info.Color.end}: local has no remote

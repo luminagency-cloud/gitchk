@@ -1,10 +1,10 @@
 import csv
 import subprocess
+import time
+from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
-from collections import namedtuple
 from functools import lru_cache, partial
-from typing import Tuple, List, Callable, Dict
 
 from . import common
 
@@ -26,7 +26,7 @@ class Truncate:
                 reader = csv.DictReader(f)
                 self.widths = next(reader)
 
-            # Ensure the Dict type is Dict[str, int] to reduce casting elsewhere
+            # Ensure the Dict type is dict[str, int] to reduce casting elsewhere
             for e, width in self.widths.items():
                 self.widths[e] = int(width)
 
@@ -96,7 +96,7 @@ def show_colors():  # pragma: no cover
 
 
 @lru_cache()
-def get_color_encoding() -> Dict[str, str]:
+def get_color_encoding() -> dict[str, str]:
     """
     Return color scheme for different local/remote situations.
     In the format of {situation: color name}
@@ -112,7 +112,7 @@ def get_color_encoding() -> Dict[str, str]:
     return colors
 
 
-def get_info_funcs(no_colors=False) -> List[Callable[[str], str]]:
+def get_info_funcs(no_colors=False) -> list[Callable[[str], str]]:
     """
     Return the functions to generate `gitchk ll` information. All these functions
     take the repo path as input and return the corresponding information as str.
@@ -130,7 +130,7 @@ def get_info_funcs(no_colors=False) -> List[Callable[[str], str]]:
     return [all_info_items[k] for k in to_display]
 
 
-def get_info_items() -> List[str]:
+def get_info_items() -> list[str]:
     """
     Return the information items to be displayed in the `gitchk ll` command.
     """
@@ -143,11 +143,11 @@ def get_info_items() -> List[str]:
         display_items = [x for x in display_items if x in ALL_INFO_ITEMS]
     else:
         # default settings
-        display_items = ["branch", "commit_msg", "commit_time"]
+        display_items = ["branch", "commit_time", "commit_msg"]
     return display_items
 
 
-def get_path(prop: Dict[str, str], truncator: Truncate) -> str:
+def get_path(prop: dict[str, str], truncator: Truncate) -> str:
     return f'{Color.cyan}{truncator.truncate("path", prop["path"])}{Color.end}'
 
 
@@ -164,7 +164,7 @@ def get_head(path: str) -> str:
     return result.stdout.strip()
 
 
-def run_quiet_diff(flags: List[str], args: List[str], path) -> int:
+def run_quiet_diff(flags: list[str], args: list[str], path) -> int:
     """
     Return the return code of git diff `args` in quiet mode
     """
@@ -189,7 +189,7 @@ def get_common_commit(path) -> str:
     return result.stdout.strip()
 
 
-def has_untracked(flags: List[str], path) -> bool:
+def has_untracked(flags: list[str], path) -> bool:
     """
     Return True if untracked file/folder exists
     """
@@ -198,7 +198,7 @@ def has_untracked(flags: List[str], path) -> bool:
     return bool(result.stdout)
 
 
-def has_stashed(flags: List[str], path) -> bool:
+def has_stashed(flags: list[str], path) -> bool:
     """
     Return True if stashed content exists
     """
@@ -212,7 +212,7 @@ def has_stashed(flags: List[str], path) -> bool:
     return got
 
 
-def get_commit_msg(prop: Dict[str, str], truncator: Truncate) -> str:
+def get_commit_msg(prop: dict[str, str], truncator: Truncate) -> str:
     """
     Return the last commit message.
     """
@@ -228,11 +228,12 @@ def get_commit_msg(prop: Dict[str, str], truncator: Truncate) -> str:
     return truncator.truncate("commit_msg", result.stdout.strip())
 
 
-def get_commit_time(prop: Dict[str, str], truncator: Truncate) -> str:
+def get_commit_time(prop: dict[str, str], truncator: Truncate) -> str:
     """
-    Return the last commit time in parenthesis.
+    Return the age of the last commit as a fixed-width string:
+    "-DDDhrs" while under a day old, "-DDDday" once a day or older.
     """
-    cmd = ["git"] + prop["flags"] + "log -1 --format=%cd --date=relative".split()
+    cmd = ["git"] + prop["flags"] + "log -1 --format=%ct".split()
     result = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
@@ -240,25 +241,36 @@ def get_commit_time(prop: Dict[str, str], truncator: Truncate) -> str:
         universal_newlines=True,
         cwd=prop["path"],
     )
-    return truncator.truncate("commit_time", f"({result.stdout.strip()})")
+    stamp = result.stdout.strip()
+    if not stamp:
+        return truncator.truncate("commit_time", "")
+
+    elapsed = max(0, int(time.time()) - int(stamp))
+    hours = elapsed // 3600
+    if hours < 24:
+        age = f"-{min(hours, 999):03d}hrs"
+    else:
+        days = elapsed // 86400
+        age = f"-{min(days, 999):03d}day"
+    return truncator.truncate("commit_time", age)
 
 
 default_symbols = {
-    "dirty": "*",
-    "staged": "+",
-    "untracked": "?",
-    "stashed": "$",
-    "local_ahead": "↑",
-    "remote_ahead": "↓",
-    "diverged": "⇕",
+    "dirty": "dirty",
+    "staged": "staged",
+    "untracked": "untracked",
+    "stashed": "stashed",
+    "local_ahead": "ahead",
+    "remote_ahead": "behind",
+    "diverged": "diverged",
     "in_sync": "",
-    "no_remote": "∅",
+    "no_remote": "noremote",
     "": "",
 }
 
 
 @lru_cache()
-def get_symbols() -> Dict[str, str]:
+def get_symbols() -> dict[str, str]:
     """
     return status symbols with customization
     """
@@ -272,11 +284,13 @@ def get_symbols() -> Dict[str, str]:
     return default_symbols
 
 
-def get_repo_status(prop: Dict[str, str], truncator: Truncate, no_colors=False) -> str:
+def get_repo_status(prop: dict[str, str], truncator: Truncate, no_colors=False) -> str:
     branch = truncator.truncate("branch", get_head(prop["path"]))
     dirty, staged, untracked, stashed, situ = _get_repo_status(prop)
-    symbols = get_symbols()
-    info = f"{branch:<10} {truncator.truncate('symbols', f'[{symbols[dirty]}{symbols[staged]}{symbols[stashed]}{symbols[untracked]}{symbols[situ]}]')}"
+    words = get_symbols()
+    active = [words[s] for s in (dirty, staged, stashed, untracked, situ) if words[s]]
+    status = "[" + "|".join(active) + "]"
+    info = f"{branch:<10} {truncator.truncate('symbols', status)}"
 
     if no_colors:
         return f"{info:<18}"
@@ -285,11 +299,11 @@ def get_repo_status(prop: Dict[str, str], truncator: Truncate, no_colors=False) 
     return f"{color}{info:<18}{Color.end}"
 
 
-def get_repo_branch(prop: Dict[str, str], truncator: Truncate) -> str:
+def get_repo_branch(prop: dict[str, str], truncator: Truncate) -> str:
     return truncator.truncate("branch_name", get_head(prop["path"]))
 
 
-def _get_repo_status(prop: Dict[str, str]) -> Tuple[str, str, str, str, str]:
+def _get_repo_status(prop: dict[str, str]) -> tuple[str, str, str, str, str]:
     """
     Return the status of one repo
     """

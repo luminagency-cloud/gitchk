@@ -1,13 +1,8 @@
-import sys
+from importlib.metadata import version
 
 
 def get_version() -> str:
-    try:
-        from importlib.metadata import version
-    except ImportError:
-        print("cannot determine version", sys.version_info)
-    else:
-        return version("gitchk")
+    return version("gitchk")
 
 
 __version__ = get_version()
