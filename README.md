@@ -1,4 +1,3 @@
-
 ```
 gitchk - a gita clone for dummies
 
@@ -6,9 +5,13 @@ I completely stole this as a learning project. The original is probably way bett
 
 UPDATES TBD
 ```
+
 ## Run me
+
+```
 py -m pip install -e .
-py -m gita -h
+py -m gitchk -h
+```
 
 # Gitchk: a command-line tool to manage multiple git repos
 
@@ -29,8 +32,7 @@ To add your own commands, see the [customization section](#custom).
 To run arbitrary `git` command, see the [superman mode section](#superman).
 To run arbitrary shell command, see the [shell mode section](#shell).
 
-** Make sure to `gitchk add` your repos first!
-
+\*\* Make sure to `gitchk add` your repos first!
 
 The branch color distinguishes 5 situations between local and remote branches:
 
@@ -50,16 +52,16 @@ See the [customization section](#custom).
 
 The additional status words denote
 
-| word        | meaning                     |
-| ----------- | ---------------------------- |
-| `staged`    | staged changes                |
-| `dirty`     | unstaged changes              |
-| `untracked` | untracked files/folders       |
-| `stashed`   | stashed contents              |
+| word        | meaning                         |
+| ----------- | ------------------------------- |
+| `staged`    | staged changes                  |
+| `dirty`     | unstaged changes                |
+| `untracked` | untracked files/folders         |
+| `stashed`   | stashed contents                |
 | `ahead`     | local branch is ahead of remote |
-| `behind`    | local branch is behind remote |
-| `diverged`  | local and remote have diverged |
-| `noremote`  | no remote is configured       |
+| `behind`    | local branch is behind remote   |
+| `diverged`  | local and remote have diverged  |
+| `noremote`  | no remote is configured         |
 
 The bookkeeping sub-commands are
 
@@ -429,9 +431,9 @@ their results agree.
 
 ## Tips
 
-| effect                    | shell command                            |
-| ------------------------- | ---------------------------------------- |
-| enter `<repo>` directory  | `` cd `gitchk ls <repo>` ``                |
+| effect                    | shell command                                |
+| ------------------------- | -------------------------------------------- |
+| enter `<repo>` directory  | `` cd `gitchk ls <repo>` ``                  |
 | delete repos in `<group>` | `gitchk group ll <group> \| xargs gitchk rm` |
 
 ## Contributing

@@ -7,16 +7,16 @@ with open("README.md", encoding="utf-8") as f:
 setup(
     name="gitchk",
     packages=["gitchk"],
-    version="0.2.0",
+    version="0.3.0",
     license="MIT",
     description="Manage multiple git repos with sanity",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/nosarthur/gitchk",
+    url="https://github.com/noluminagency-cloud/gitchk",
     platforms=["linux", "osx", "win32"],
     keywords=["git", "manage multiple repositories", "cui", "command-line"],
-    author="Dong Zhou",
-    author_email="zhou.dong@gmail.com",
+    author="Davey Mars",
+
     entry_points={"console_scripts": ["gitchk = gitchk.__main__:main"]},
     python_requires=">=3.14",
     install_requires=["argcomplete", "packaging"],
@@ -31,7 +31,7 @@ setup(
         "Topic :: Terminals",
         "Topic :: Utilities",
         "Programming Language :: Python :: 3.14",
-        "Programming Language :: Python :: 3 :: Only",
+
     ],
     include_package_data=True,
 )

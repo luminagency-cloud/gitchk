@@ -2,6 +2,8 @@
 
 ## Features
 
+make sure -version works
+
 ## Bugs
 
 - **Windows: path handling breaks `freeze`, `auto_group`, `add_repos`.**
