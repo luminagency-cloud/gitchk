@@ -175,6 +175,20 @@ def test_get_repos(mock_path_fname, _, path_fname, expected):
     assert utils.get_repos() == expected
 
 
+@patch("gitchk.utils.is_git", return_value=True)
+@patch("gitchk.common.get_config_fname")
+def test_get_repos_dedups_case_variant_path(mock_path_fname, _):
+    mock_path_fname.return_value = "unused"
+    utils.get_repos.cache_clear()
+    csv_data = "C:\\work\\repo,repo,,\r\nc:\\WORK\\repo,repo2,,\r\n"
+    with patch("builtins.open", mock_open(read_data=csv_data)), patch(
+        "os.path.isfile", return_value=True
+    ), patch("os.stat") as mock_stat:
+        mock_stat.return_value.st_size = len(csv_data)
+        result = utils.get_repos()
+    assert result == {"repo": {"path": "C:\\work\\repo", "type": "", "flags": []}}
+
+
 @patch("gitchk.common.get_config_dir")
 def test_get_context(mock_config_dir):
     mock_config_dir.return_value = TEST_DIR
@@ -247,6 +261,18 @@ def test_add_repos(_0, _1, path_input, expected, monkeypatch):
         args, kwargs = handle.write.call_args
         assert args[0] in expected
         assert not kwargs
+
+
+@patch("os.makedirs")
+@patch("gitchk.utils.is_git", return_value=True)
+def test_add_repos_skips_case_variant_of_existing_path(_0, _1, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", "/config")
+    with patch("builtins.open", mock_open()) as mock_file:
+        result = utils.add_repos(
+            {"repo": {"path": "C:\\work\\repo"}}, ["c:\\WORK\\repo"]
+        )
+    assert result == {}
+    mock_file.assert_not_called()
 
 
 @patch("gitchk.utils.write_to_groups_file")

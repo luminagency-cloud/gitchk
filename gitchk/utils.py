@@ -47,13 +47,18 @@ def get_repos(skip_validation: bool = False) -> dict[str, dict[str, str]]:
     """
     path_file = common.get_config_fname("repos.csv")
     repos = {}
+    seen_paths = set()
     if os.path.isfile(path_file) and os.stat(path_file).st_size > 0:
         with open(path_file) as f:
             rows = csv.DictReader(
                 f, ["path", "name", "type", "flags"], restval=""
             )  # it's actually a reader
             for r in rows:
+                norm_path = os.path.normcase(os.path.normpath(r["path"]))
+                if norm_path in seen_paths:
+                    continue
                 if skip_validation or is_git(r["path"], include_bare=True):
+                    seen_paths.add(norm_path)
                     repos[r["name"]] = {
                         "path": r["path"],
                         "type": r["type"],
@@ -297,9 +302,14 @@ def add_repos(
 
     @param repos: name -> path
     """
-    existing_paths = {prop["path"] for prop in repos.values()}
+    existing_paths = {
+        os.path.normcase(os.path.normpath(prop["path"])) for prop in repos.values()
+    }
     new_paths = {p for p in new_paths if is_git(p, include_bare, exclude_submodule)}
-    new_paths = new_paths - existing_paths
+    new_paths = {
+        p for p in new_paths
+        if os.path.normcase(os.path.normpath(p)) not in existing_paths
+    }
     new_repos = {}
     if new_paths:
         print(f"Found {len(new_paths)} new repo(s).")
@@ -418,7 +428,7 @@ def describe(repos: dict[str, dict[str, str]], no_colors: bool = False) -> str:
         with ThreadPoolExecutor(max_workers=num_threads) as executor:
             for line in executor.map(
                 lambda name: f"{name:<{name_width}}{' '.join(f(repos[name], truncator) for f in funcs)}",
-                sorted(repos),
+                sorted(repos, key=str.lower),
             ):
                 yield line
 
