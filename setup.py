@@ -19,7 +19,7 @@ setup(
 
     entry_points={"console_scripts": ["gitchk = gitchk.__main__:main"]},
     python_requires=">=3.14",
-    install_requires=["argcomplete", "packaging"],
+    install_requires=["argcomplete"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
