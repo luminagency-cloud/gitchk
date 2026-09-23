@@ -8,7 +8,6 @@ Examples:
     gitchk ls
     gitchk fetch
     gitchk stat myrepo2
-    gitchk super myrepo1 commit -am 'add some cool feature'
 
 For bash auto completion, download and source
 """
@@ -424,10 +423,7 @@ def f_git_cmd(args: argparse.Namespace):
     Delegate git command/alias defined in `args.cmd`. Asynchronous execution is
     disabled for commands in the `args.async_blacklist`.
     """
-    if "_parsed_repos" in args:
-        repos = args._parsed_repos
-    else:
-        repos, _ = utils.parse_repos_and_rest(args.repo)
+    repos, _ = utils.parse_repos_and_rest(args.repo)
 
     per_repo_cmds = []
     for prop in repos.values():
@@ -482,22 +478,6 @@ def f_shell(args):
             stderr=subprocess.STDOUT,
         )
         print(utils.format_output(got.stdout.decode(), name))
-
-
-def f_super(args):
-    """
-    Delegate git command/alias defined in `args.man`, which may or may not
-    contain repo names.
-    """
-    repos, cmds = utils.parse_repos_and_rest(args.man, args.quote_mode)
-    if not cmds:
-        print("Missing commands")
-        sys.exit(2)
-
-    args.cmd = ["git"] + cmds
-    args._parsed_repos = repos
-    args.shell = False
-    f_git_cmd(args)
 
 
 def f_clear(_):
@@ -686,7 +666,7 @@ def main(argv=None):
     ll_doc = f"""  status words:
     staged: staged changes
     dirty: unstaged changes
-    untracked: untracked files/folders
+    untracked file(s): untracked files/folders
     stashed: stashed changes
     ahead: local branch is ahead of remote
     behind: local branch is behind remote
@@ -814,27 +794,6 @@ def main(argv=None):
     group_cmds.add_parser("rm", description="Remove group(s).").add_argument(
         "to_ungroup", nargs="+", choices=utils.get_groups(), help="group(s) to delete"
     )
-
-    # superman mode
-    p_super = subparsers.add_parser(
-        "super",
-        help="run any git command/alias",
-        description="Superman mode: delegate any git command/alias in specified repo(s), group(s), or "
-        "all repo(s).\n"
-        'Examples:\n \t gitchk super myrepo1 commit -am "fix a bug"\n'
-        "\t gitchk super repo1 repo2 repo3 checkout new-feature",
-    )
-    p_super.add_argument(
-        "man",
-        nargs=argparse.REMAINDER,
-        help="execute arbitrary git command/alias for specified repo(s), group(s), or all repos.\n"
-        "Example: gitchk super repo1 diff --name-only --staged;\n"
-        "gitchk super checkout master ",
-    )
-    p_super.add_argument(
-        "-q", "--quote-mode", action="store_true", help="use quote mode"
-    )
-    p_super.set_defaults(func=f_super)
 
     # shell mode
     p_shell = subparsers.add_parser(

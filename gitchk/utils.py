@@ -470,7 +470,7 @@ def parse_repos_and_rest(
     """
     Parse gitchk input arguments
 
-    @return: repos and the rest (e.g., gitchk shell and super commands)
+    @return: repos and the rest (e.g., gitchk shell commands)
     """
     i = 0
     names = []

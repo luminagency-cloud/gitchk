@@ -13,11 +13,10 @@ information for each repo, and displays the result of all repos side by side.
 
 ## user interface
 
-There are three types of `gitchk` sub-commands
+There are two types of `gitchk` sub-commands
 
 - **bookkeeping**: add/remove repos from `gitchk`, display repo information
 - **delegating**: delegate pre-configured `git` commands or aliases
-- **`super`**: delegate arbitrary `git` commands or aliases
 
 And there are only two `gitchk` options, i.e., the `-h` for help and `-v` for version.
 
@@ -28,12 +27,11 @@ gitchk <sub-command> <repo-name(s)>
 gitchk <sub-command> [repo-name(s)]
 ```
 
-The exceptions are `add`, `ll`, and `super`
+The exceptions are `add` and `ll`
 
 ```shell
 gitchk ll
 gitchk add <repo-path(s)>
-gitchk super [repo-name(s)] <any-git-command-with-options>
 ```
 
 The argument choices are determined by two utility functions
@@ -56,13 +54,11 @@ to run either `subprocess` or `asyncio` APIs.
 `subprocess` is used if there is only one repo input or the sub-command is
 not allowed to run asynchronously. Otherwise `asyncio` is used for efficiency.
 
-The bookkeeping and `super` sub-commands have their own action functions
+The bookkeeping sub-commands have their own action functions
 
 ```python
 f_<sub-command>(args: argparse.Namespace)
 ```
-
-Not surprisingly, the `f_super` function calls `f_git_cmd` in the end.
 
 ## repo status information
 

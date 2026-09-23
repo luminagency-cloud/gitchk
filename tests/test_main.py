@@ -130,12 +130,12 @@ class TestLsLl:
         [
             (
                 PATH_FNAME,
-                "repo1 \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\nrepo2 \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\nxxx   \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\n",
+                "repo1 \x1b[31mmaster     [dirty|staged|untracked file(s)|diverged]\x1b[0m  msg\nrepo2 \x1b[31mmaster     [dirty|staged|untracked file(s)|diverged]\x1b[0m  msg\nxxx   \x1b[31mmaster     [dirty|staged|untracked file(s)|diverged]\x1b[0m  msg\n",
             ),
             (PATH_FNAME_EMPTY, ""),
             (
                 PATH_FNAME_CLASH,
-                "repo1 \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\nrepo2 \x1b[31mmaster     [dirty|staged|untracked|diverged]\x1b[0m  msg\n",
+                "repo1 \x1b[31mmaster     [dirty|staged|untracked file(s)|diverged]\x1b[0m  msg\nrepo2 \x1b[31mmaster     [dirty|staged|untracked file(s)|diverged]\x1b[0m  msg\n",
             ),
         ],
     )
@@ -291,23 +291,6 @@ def test_async_fetch(*_):
     # print(mock_run.call_args_list)
     mock_run.assert_any_call("repo1", "/a/bc", cmds)
     mock_run.assert_any_call("repo2", "/d/efg", cmds)
-
-
-@pytest.mark.parametrize(
-    "input",
-    [
-        "diff --name-only --staged",
-        "commit -am 'lala kaka'",
-    ],
-)
-@patch("gitchk.utils.get_repos", return_value={"repo7": {"path": "path7", "flags": []}})
-@patch("subprocess.run")
-def test_superman(mock_run, _, input):
-    mock_run.reset_mock()
-    args = ["super", "repo7"] + shlex.split(input)
-    __main__.main(args)
-    expected_cmds = ["git"] + shlex.split(input)
-    mock_run.assert_called_once_with(expected_cmds, cwd="path7", shell=False)
 
 
 @pytest.mark.parametrize(

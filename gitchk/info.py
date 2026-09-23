@@ -258,7 +258,7 @@ def get_commit_time(prop: dict[str, str], truncator: Truncate) -> str:
 default_symbols = {
     "dirty": "dirty",
     "staged": "staged",
-    "untracked": "untracked",
+    "untracked": "untracked file(s)",
     "stashed": "stashed",
     "local_ahead": "ahead",
     "remote_ahead": "behind",

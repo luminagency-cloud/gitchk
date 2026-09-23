@@ -7,9 +7,9 @@ with open("README.md", encoding="utf-8") as f:
 setup(
     name="gitchk",
     packages=["gitchk"],
-    version="0.3.0",
+    version="1.3.1",
     license="MIT",
-    description="Manage multiple git repos with sanity",
+    description="Manage multiple git repos from one place",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/noluminagency-cloud/gitchk",

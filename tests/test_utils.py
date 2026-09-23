@@ -116,17 +116,17 @@ def test_auto_group(repos, paths, expected):
         (
             [{"abc": {"path": "/root/repo/", "type": "", "flags": []}}, False],
             True,
-            "abc \x1b[31mrepo       [dirty|staged|untracked|diverged]\x1b[0m xx msg",
+            "abc \x1b[31mrepo       [dirty|staged|untracked file(s)|diverged]\x1b[0m xx msg",
         ),
         (
             [{"abc": {"path": "/root/repo/", "type": "", "flags": []}}, True],
             True,
-            "abc repo       [dirty|staged|untracked|diverged] xx msg",
+            "abc repo       [dirty|staged|untracked file(s)|diverged] xx msg",
         ),
         (
             [{"repo": {"path": "/root/repo2/", "type": "", "flags": []}}, False],
             False,
-            "repo \x1b[32mrepo       [untracked]\x1b[0m xx msg",
+            "repo \x1b[32mrepo       [untracked file(s)]\x1b[0m xx msg",
         ),
     ],
 )

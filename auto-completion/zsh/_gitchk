@@ -47,7 +47,6 @@ __gitchk_commands() {
         'context:Set context'
         'ls:Show repo(s) or repo path'
         'group:Group repos'
-        'super:Run any git command/alias'
         'shell:Run any shell command'
         'clear:Removes all groups and repositories'
     )
@@ -415,15 +414,6 @@ _gitchk_group() {
         return 1
         ;;
     esac
-}
-#]]]
-
-# FUNCTION: _gitchk_super [[[
-_gitchk_super() {
-    _arguments -A \
-        '(-h --help)'{-h,--help}'[show this help message and exit]' \
-        '(-q --quote-mode)'{-q,--quote-mode}'[use quote mode]' &&
-        ret=0
 }
 #]]]
 

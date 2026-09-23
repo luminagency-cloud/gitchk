@@ -2,6 +2,7 @@
 gitchk - a gita clone for dummies
 
 I completely stole this as a learning project. The original is probably way better.
+(DM)
 
 UPDATES TBD
 ```
@@ -29,7 +30,6 @@ The `gitchk fetch` command fetches from all repos and two of them have updates.
 To see the pre-defined commands, run `gitchk -h` or take a look at
 [cmds.json](https://github.com/nosarthur/gitchk/blob/master/gitchk/cmds.json).
 To add your own commands, see the [customization section](#custom).
-To run arbitrary `git` command, see the [superman mode section](#superman).
 To run arbitrary shell command, see the [shell mode section](#shell).
 
 \*\* Make sure to `gitchk add` your repos first!
@@ -56,7 +56,7 @@ The additional status words denote
 | ----------- | ------------------------------- |
 | `staged`    | staged changes                  |
 | `dirty`     | unstaged changes                |
-| `untracked` | untracked files/folders         |
+| `untracked file(s)` | untracked files/folders  |
 | `stashed`   | stashed contents                |
 | `ahead`     | local branch is ahead of remote |
 | `behind`    | local branch is behind remote   |
@@ -122,7 +122,6 @@ By default, only `fetch` and `pull` take optional input. In other words,
 To see the pre-defined sub-commands, run `gitchk -h` or take a look at
 [cmds.json](https://github.com/nosarthur/gitchk/blob/master/gitchk/cmds.json).
 To add your own sub-commands or override the default behaviors, see the [customization section](#custom).
-To run arbitrary `git` command, see the [superman mode section](#superman).
 
 If more than one repos are specified, the `git` command runs asynchronously,
 with the exception of `log`, `difftool` and `mergetool`,
@@ -190,22 +189,6 @@ There are 2 options :
 ### Fish
 
 Download [gitchk.fish](https://github.com/nosarthur/gitchk/blob/master/auto-completion/fish/gitchk.fish) and place it in `~/.config/fish/completions/`
-
-## <a name='superman'></a> Superman mode
-
-The superman mode delegates any `git` command or alias.
-Usage:
-
-```
-gitchk super [repo-name(s) or group-name(s)] <any-git-command-with-or-without-options>
-```
-
-Here `repo-name(s)` or `group-name(s)` are optional, and their absence means all repos.
-For example,
-
-- `gitchk super checkout master` puts all repos on the master branch
-- `gitchk super frontend-repo backend-repo commit -am 'implement a new feature'`
-  executes `git commit -am 'implement a new feature'` for `frontend-repo` and `backend-repo`
 
 ## <a name='shell'></a> Shell mode
 
@@ -333,8 +316,7 @@ For example, the following snippet creates a new command
 }
 ```
 
-Any command that runs in the [superman mode](#superman) mode or the
-[shell mode](#shell) can be defined in this json format.
+Any command that runs in the [shell mode](#shell) can be defined in this json format.
 For example, the following command runs in shell mode and fetches only the
 current branch from upstream.
 
@@ -394,7 +376,7 @@ The default settings corresponds to
 
 ```csv
 dirty,staged,untracked,stashed,local_ahead,remote_ahead,diverged,in_sync,no_remote
-dirty,staged,untracked,stashed,ahead,behind,diverged,,noremote
+dirty,staged,untracked file(s),stashed,ahead,behind,diverged,,noremote
 ```
 
 Only the values to be overridden need to be defined.
