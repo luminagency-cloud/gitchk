@@ -17,18 +17,16 @@ class Truncate:
     truncate
     """
 
-    widths = {}
-
     def __init__(self):
+        # Default cap so the last column doesn't wrap; layout.csv overrides (0 = no limit)
+        self.widths = {"commit_msg": 40}
         csv_config = Path(common.get_config_fname("layout.csv"))
         if csv_config.is_file():
             with open(csv_config, "r") as f:
                 reader = csv.DictReader(f)
-                self.widths = next(reader)
-
-            # Ensure the Dict type is dict[str, int] to reduce casting elsewhere
-            for e, width in self.widths.items():
-                self.widths[e] = int(width)
+                # Ensure the Dict type is dict[str, int] to reduce casting elsewhere
+                for e, width in next(reader).items():
+                    self.widths[e] = int(width)
 
     def truncate(self, field: str, message: str):
         # 0 means no width limit applied
