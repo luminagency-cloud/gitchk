@@ -117,14 +117,14 @@ def get_groups() -> dict[str, dict[str, str | list]]:
             rows = csv.DictReader(
                 f, ["name", "repos", "path"], restval="", delimiter=":"
             )
-            # filter out invalid repos
-            groups = {
-                r["name"]: {
-                    "repos": [repo for repo in r["repos"].split() if repo in repos],
-                    "path": r["path"],
-                }
-                for r in rows
-            }
+            # filter out invalid repos; merge rows that repeat a group name
+            # (`add -a` appends groups, so the same name can show up many times)
+            for r in rows:
+                g = groups.setdefault(r["name"], {"repos": [], "path": r["path"]})
+                g["repos"] += [
+                    repo for repo in r["repos"].split()
+                    if repo in repos and repo not in g["repos"]
+                ]
     return groups
 
 
@@ -286,7 +286,7 @@ def _make_name(
     if name in repos or name_counts[name] > 1:
         # path has no trailing /
         par_name = os.path.basename(os.path.dirname(path))
-        return os.path.join(par_name, name)
+        return f"{par_name}/{name}"  # a name, not a path: same on every OS
     return name
 
 

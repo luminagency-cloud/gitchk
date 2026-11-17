@@ -1,4 +1,5 @@
 import pytest
+import os
 import asyncio
 import subprocess
 import sys
@@ -107,6 +108,9 @@ def test_generate_dir_hash(repo_path, paths, expected):
 )
 def test_auto_group(repos, paths, expected):
     got = utils.auto_group(repos, paths)
+    # auto_group joins with os.sep; compare as POSIX so the test runs on Windows
+    for prop in got.values():
+        prop["path"] = prop["path"].replace(os.sep, "/")
     assert got == expected
 
 
@@ -251,7 +255,9 @@ def test_add_repos(_0, _1, path_input, expected, monkeypatch):
     monkeypatch.setenv("XDG_CONFIG_HOME", "/config")
     with patch("builtins.open", mock_open()) as mock_file:
         utils.add_repos({"repo": {"path": "/nos/repo"}}, path_input)
-    mock_file.assert_called_with("/config/gitchk/repos.csv", "a+", newline="")
+    mock_file.assert_called_with(
+        os.path.join("/config", "gitchk", "repos.csv"), "a+", newline=""
+    )
     handle = mock_file()
     if type(expected) == str:
         handle.write.assert_called_once_with(expected)
@@ -315,3 +321,13 @@ def test_is_git(tmpdir):
         subprocess.run("git init --bare .".split())
         assert utils.is_git(Path.cwd()) is False
         assert utils.is_git(Path.cwd(), include_bare=True) is True
+
+
+@patch("gitchk.utils.get_repos", return_value={"a": {}, "b": {}, "c": {}})
+def test_get_groups_merges_duplicate_names(_, tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    (tmp_path / "gitchk").mkdir()
+    (tmp_path / "gitchk" / "groups.csv").write_text("g:a b:/p\ng:b c gone:/p\n")
+    utils.get_groups.cache_clear()
+    assert utils.get_groups() == {"g": {"repos": ["a", "b", "c"], "path": "/p"}}
+    utils.get_groups.cache_clear()

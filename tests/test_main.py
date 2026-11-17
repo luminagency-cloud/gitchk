@@ -171,9 +171,10 @@ class TestLsLl:
         ({"repo1": {"path": "/a/"}, "repo2": {"path": "/b/"}}, ""),
     ],
 )
+@patch("gitchk.utils.get_groups", return_value={})
 @patch("subprocess.run")
 @patch("gitchk.utils.get_repos")
-def test_freeze(mock_repos, mock_run, input, expected, capfd):
+def test_freeze(mock_repos, mock_run, _, input, expected, capfd):
     mock_repos.return_value = input
     __main__.main(["freeze"])
     assert mock_run.call_count == 2
