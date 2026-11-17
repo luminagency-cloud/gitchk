@@ -24,7 +24,7 @@ from pathlib import Path
 
 import argcomplete
 
-from . import common, get_version, info, io, utils
+from . import common, get_version, info, utils
 
 
 def _group_name(name: str, exclude_old_names=True) -> str:
@@ -140,18 +140,15 @@ def f_info(args: argparse.Namespace):
         if unused:
             print("Unused:", ",".join(unused))
         return
-    if cmd == "add" and args.info_item not in to_display:
-        to_display.append(args.info_item)
-        csv_config = common.get_config_fname("info.csv")
-        with open(csv_config, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(to_display)
-    elif cmd == "rm" and args.info_item in to_display:
-        to_display.remove(args.info_item)
-        csv_config = common.get_config_fname("info.csv")
-        with open(csv_config, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(to_display)
+    if cmd in ("add", "rm"):
+        if cmd == "add" and args.info_item not in to_display:
+            to_display.append(args.info_item)
+        elif cmd == "rm" and args.info_item in to_display:
+            to_display.remove(args.info_item)
+        else:
+            return
+        with open(common.get_config_fname("info.csv"), "w", newline="") as f:
+            csv.writer(f).writerow(to_display)
     elif cmd == "set-length":
         csv_config = common.get_config_fname("layout.csv")
         print(f"Settings are in {csv_config}")
@@ -169,10 +166,41 @@ def f_info(args: argparse.Namespace):
             writer.writerow(defaults)
 
 
+def parse_clone_config(fname: str) -> tuple:
+    """
+    Return the repo information (url, name, path, type) and group information
+    (, name, path, repos) saved in `fname`.
+    """
+    repos = {}
+    groups = {}
+    if os.path.isfile(fname) and os.stat(fname).st_size > 0:
+        with open(fname) as f:
+            rows = csv.DictReader(
+                f, ["url", "name", "path", "type", "flags", "branch"], restval=""
+            )  # it's actually a reader
+            for r in rows:
+                if r["url"]:
+                    repos[r["name"]] = {
+                        "path": r["path"],
+                        "type": r["type"],
+                        "flags": r["flags"].split(),
+                        "url": r["url"],
+                        "branch": r["branch"],
+                    }
+                else:
+                    groups[r["name"]] = {
+                        "path": r["path"],
+                        "repos": [
+                            repo for repo in r["type"].split("|") if repo in repos
+                        ],
+                    }
+    return repos, groups
+
+
 def f_clone(args: argparse.Namespace):
     if args.dry_run:
         if args.from_file:
-            for url, repo_name, abs_path in io.parse_clone_config(args.clonee):
+            for url, repo_name, abs_path in parse_clone_config(args.clonee):
                 print(f"git clone {url} {abs_path}")
         else:
             print(f"git clone {args.clonee}")
@@ -196,7 +224,7 @@ def f_clone(args: argparse.Namespace):
         f_add(args)
         return
 
-    repos_to_clone, groups_to_clone = io.parse_clone_config(args.clonee)
+    repos_to_clone, groups_to_clone = parse_clone_config(args.clonee)
 
     clone_tasks = []
     for repo_name, prop in repos_to_clone.items():
@@ -257,11 +285,9 @@ def f_freeze(args):
         group_repos = utils.get_groups()[group_name]["repos"]
         repos = {k: repos[k] for k in group_repos if k in repos}
     seen = {""}
-    # print(repos)
     for name, prop in repos.items():
         path = prop["path"]
         url = ""
-        # FIXME: capture_output is new in 3.7. Maybe drop support for 3.6
         cp = subprocess.run(
             ["git", "remote", "-v"],
             cwd=path,
@@ -375,12 +401,8 @@ def f_group(args: argparse.Namespace):
     elif cmd == "rmrepo":
         gname = args.gname
         if gname in groups:
-            group = {
-                gname: {"repos": groups[gname]["repos"], "path": groups[gname]["path"]}
-            }
-            for repo in args.to_rm:
-                utils.delete_repo_from_groups(repo, group)
-            groups[gname] = group[gname]
+            members = groups[gname]["repos"]
+            members[:] = [r for r in members if r not in args.to_rm]
             utils.write_to_groups_file(groups, "w")
 
 

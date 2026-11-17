@@ -201,13 +201,7 @@ def has_stashed(flags: list[str], path) -> bool:
     Return True if stashed content exists
     """
     # FIXME: this doesn't work for repos like worktrees, bare, etc
-    p = Path(path) / ".git" / "logs" / "refs" / "stash"
-    got = False
-    try:
-        got = p.is_file()
-    except Exception:
-        pass
-    return got
+    return (Path(path) / ".git" / "logs" / "refs" / "stash").is_file()
 
 
 def get_commit_msg(prop: dict[str, str], truncator: Truncate) -> str:

@@ -1,7 +1,6 @@
 import asyncio
 import csv
 import json
-import multiprocessing
 import os
 import subprocess
 import sys
@@ -13,8 +12,6 @@ from pathlib import Path
 
 from . import common, info
 
-MAX_INT = sys.maxsize
-
 
 def get_relative_path(kid: os.PathLike, parent: str) -> list[str] | None:
     """
@@ -25,16 +22,10 @@ def get_relative_path(kid: os.PathLike, parent: str) -> list[str] | None:
     if parent == "":
         return None
 
-    p_kid = Path(kid)
-    # p_kid = Path(kid).resolve()
     try:
-        p_rel = p_kid.relative_to(parent)
+        return list(Path(kid).relative_to(parent).parts)
     except ValueError:
         return None
-    rel = str(p_rel).split(os.sep)
-    if rel == ["."]:
-        rel = []
-    return rel
 
 
 @lru_cache()
@@ -85,20 +76,13 @@ def get_context() -> Path | None:
     ctx = matches[0]
     if ctx.stem == "auto":
         # The context is set to be the group with minimal distance to cwd
-        candidate = None
-        min_dist = MAX_INT
-        for gname, prop in get_groups().items():
-            rel = get_relative_path(Path.cwd(), prop["path"])
-            if rel is None:
-                continue
-            d = len(rel)
-            if d < min_dist:
-                candidate = gname
-                min_dist = d
-        if not candidate:
-            ctx = None
-        else:
-            ctx = ctx.with_name(f"{candidate}.context")
+        dists = {
+            gname: len(rel)
+            for gname, prop in get_groups().items()
+            if (rel := get_relative_path(Path.cwd(), prop["path"])) is not None
+        }
+        candidate = min(dists, key=dists.get, default=None)
+        ctx = ctx.with_name(f"{candidate}.context") if candidate else None
     return ctx
 
 
@@ -136,7 +120,7 @@ def delete_repo_from_groups(repo: str, groups: dict[str, dict]) -> bool:
     for name in groups:
         try:
             groups[name]["repos"].remove(repo)
-        except ValueError as e:
+        except ValueError:
             pass
         else:
             deleted = True
@@ -174,9 +158,7 @@ def get_choices() -> list[str | None]:
 
 def is_submodule_repo(p: Path) -> bool:
     """ """
-    if p.is_file() and ".git/modules" in p.read_text():
-        return True
-    return False
+    return p.is_file() and ".git/modules" in p.read_text()
 
 
 def is_git(path: str, include_bare=False, exclude_submodule=False) -> bool:
@@ -207,9 +189,7 @@ def is_git(path: str, include_bare=False, exclude_submodule=False) -> bool:
         stderr=subprocess.DEVNULL,
         cwd=path,
     )
-    if got.returncode == 0 and got.stdout == b"true\n":
-        return True
-    return False
+    return got.returncode == 0 and got.stdout == b"true\n"
 
 
 def rename_repo(repos: dict[str, dict[str, str]], repo: str, new_name: str):
@@ -424,8 +404,7 @@ def describe(repos: dict[str, dict[str, str]], no_colors: bool = False) -> str:
         name_width = len(max(repos, key=len)) + 1
         funcs = info.get_info_funcs(no_colors=no_colors)
 
-        num_threads = min(multiprocessing.cpu_count(), len(repos))
-        with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        with ThreadPoolExecutor() as executor:
             for line in executor.map(
                 lambda name: f"{name:<{name_width}}{' '.join(f(repos[name], truncator) for f in funcs)}",
                 sorted(repos, key=str.lower),
@@ -483,8 +462,7 @@ def parse_repos_and_rest(
         else:
             break
     else:  # all input is repos and groups, shift the index once more
-        if i is not None:
-            i += 1
+        i += 1
     if not names and ctx:
         names = [ctx.stem]
     if quote_mode and i + 1 != len(input):
